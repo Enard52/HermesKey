@@ -98,13 +98,15 @@ PY
 
 query_active_app() {
   local prefix="${1:-APP_}"
+  local window_info
   if ! command -v qdbus >/dev/null 2>&1; then
     printf "%sUUID=''\n%sDESKTOP_FILE=''\n%sRESOURCE_CLASS=''\n%sCAPTION=''\n%sPID=''\n" \
       "$prefix" "$prefix" "$prefix" "$prefix" "$prefix"
     return 0
   fi
 
-  qdbus org.kde.KWin /KWin org.kde.KWin.queryWindowInfo 2>/dev/null | python3 - "$prefix" <<'PY'
+  window_info="$(qdbus org.kde.KWin /KWin org.kde.KWin.queryWindowInfo 2>/dev/null || true)"
+  printf '%s\n' "$window_info" | python3 -c '
 import shlex
 import sys
 
@@ -126,8 +128,8 @@ mapping = {
     "pid": "PID",
 }
 for src, dest in mapping.items():
-    print(f"{prefix}{dest}={shlex.quote(data.get(src, ''))}")
-PY
+    print(f"{prefix}{dest}={shlex.quote(data.get(src, ""))}")
+' "$prefix"
 }
 
 capture_target_app() {
@@ -142,7 +144,6 @@ load_target_app() {
   TARGET_DESKTOP_FILE=""
   TARGET_RESOURCE_CLASS=""
   TARGET_CAPTION=""
-  TARGET_PID=""
   if [[ -f "$TARGET_STATE" ]]; then
     # shellcheck disable=SC1090
     source "$TARGET_STATE"
