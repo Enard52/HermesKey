@@ -20,6 +20,7 @@ Use this page as the map for the detailed documentation.
 - [PACKAGING.md](PACKAGING.md) — RPM/AUR direction and packaging notes
 - [RELEASING.md](RELEASING.md) — release checklist and tooling
 - [ROADMAP.md](ROADMAP.md) — planned milestones and product direction
+- [PROJECT-BOARD.md](PROJECT-BOARD.md) — optional GitHub Project board setup
 
 ## Project policies
 

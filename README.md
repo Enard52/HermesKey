@@ -115,6 +115,7 @@ Detailed documentation lives here:
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/PACKAGING.md](docs/PACKAGING.md)
 - [docs/RELEASING.md](docs/RELEASING.md)
+- [docs/ROADMAP.md](docs/ROADMAP.md)
 
 ## Development
 
