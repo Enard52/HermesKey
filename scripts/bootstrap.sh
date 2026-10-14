@@ -30,6 +30,12 @@ ok() { say "${GREEN}${BOLD}✔${RESET} $*"; }
 warn() { say "${YELLOW}${BOLD}!${RESET} $*"; }
 fail() { say "${RED}${BOLD}✘${RESET} $*" >&2; exit 1; }
 
+banner() {
+  say "${BOLD}HermesKey bootstrap installer${RESET}"
+  say "Local-first push-to-talk speech-to-text for Linux Wayland desktops"
+  say
+}
+
 usage() {
   cat <<EOF
 HermesKey bootstrap installer
@@ -121,6 +127,8 @@ setup_python_env() {
   ok "Python dependencies installed"
 }
 
+banner
+
 TMP_DIR="$(mktemp -d)"
 trap 'rm -rf "$TMP_DIR"' EXIT
 
@@ -151,7 +159,14 @@ bash "$ROOT/install.sh"
 
 ok "HermesKey bootstrap complete"
 say
-say "Next steps:"
+say "${BOLD}What you now have${RESET}"
+say "  • ~/.local/bin/hermeskey"
+say "  • ~/.config/systemd/user/hermeskey.service"
+say "  • ~/.config/systemd/user/hermeskey-ydotoold.service"
+say "  • ~/.config/hermeskey/hermeskey.env"
+say
+say "${BOLD}Next steps${RESET}"
 say "  1. Edit ~/.config/hermeskey/hermeskey.env"
 say "  2. Bind your desktop hotkey to: ~/.local/bin/hermeskey"
-say "  3. Run diagnostics anytime with: hermeskey-doctor"
+say "  3. Check runtime health with: hermeskey --status"
+say "  4. Run diagnostics anytime with: hermeskey-doctor"

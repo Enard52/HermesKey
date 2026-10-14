@@ -3,11 +3,14 @@ set -euo pipefail
 
 APP_ID="hermeskey"
 ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+VERSION="$(tr -d '[:space:]' < "$ROOT/VERSION")"
 BIN_DEST="$HOME/.local/bin"
 SYSTEMD_DEST="$HOME/.config/systemd/user"
 CONFIG_DEST_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/$APP_ID"
+DATA_DEST_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/$APP_ID"
 CONFIG_DEST="$CONFIG_DEST_DIR/hermeskey.env"
 CONFIG_EXAMPLE_DEST="$CONFIG_DEST_DIR/hermeskey.env.example"
+VERSION_DEST="$DATA_DEST_DIR/VERSION"
 
 need_cmd() {
   command -v "$1" >/dev/null 2>&1 || {
@@ -28,7 +31,7 @@ warn_if_missing notify-send
 warn_if_missing ydotool
 warn_if_missing paplay
 
-mkdir -p "$BIN_DEST" "$SYSTEMD_DEST" "$CONFIG_DEST_DIR"
+mkdir -p "$BIN_DEST" "$SYSTEMD_DEST" "$CONFIG_DEST_DIR" "$DATA_DEST_DIR"
 
 install -m 0755 "$ROOT/bin/hermeskey" "$BIN_DEST/hermeskey"
 install -m 0755 "$ROOT/bin/hermeskey-server.py" "$BIN_DEST/hermeskey-server.py"
@@ -37,6 +40,7 @@ install -m 0755 "$ROOT/bin/hermeskey-doctor" "$BIN_DEST/hermeskey-doctor"
 install -m 0644 "$ROOT/systemd/user/hermeskey.service" "$SYSTEMD_DEST/hermeskey.service"
 install -m 0644 "$ROOT/systemd/user/hermeskey-ydotoold.service" "$SYSTEMD_DEST/hermeskey-ydotoold.service"
 install -m 0644 "$ROOT/config/hermeskey.env.example" "$CONFIG_EXAMPLE_DEST"
+install -m 0644 "$ROOT/VERSION" "$VERSION_DEST"
 
 if [[ ! -f "$CONFIG_DEST" ]]; then
   install -m 0644 "$ROOT/config/hermeskey.env.example" "$CONFIG_DEST"
@@ -58,10 +62,11 @@ systemctl --user enable --now hermeskey-ydotoold.service
 systemctl --user enable --now hermeskey.service
 
 echo
-printf 'HermesKey installed.\n\n'
+printf 'HermesKey %s installed.\n\n' "$VERSION"
 printf 'Main command: %s\n' "$BIN_DEST/hermeskey"
 printf 'Doctor tool:   %s\n' "$BIN_DEST/hermeskey-doctor"
 printf 'Config file:   %s\n' "$CONFIG_DEST"
+printf 'Version file:  %s\n' "$VERSION_DEST"
 printf 'Hotkey target: %s\n\n' "$BIN_DEST/hermeskey"
 printf 'Suggested next steps:\n'
 printf '  1. Activate your Python venv if needed.\n'

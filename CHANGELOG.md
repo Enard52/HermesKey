@@ -6,6 +6,23 @@ All notable changes to HermesKey will be documented in this file.
 
 - TBD
 
+## [0.2.0] - 2026-10-13
+
+Command-and-distribution polish release.
+
+### Added
+
+- `hermeskey --help`, `--version`, `--status`, and `--doctor`
+- richer bootstrap installer output and post-install guidance
+- release process documentation and helper script
+- packaging direction docs and starter RPM / AUR scaffolding
+- hotkey setup documentation
+
+### Changed
+
+- improved README install flow and distro quick-start presentation
+- tightened the project’s packaging and release story
+
 ## [0.1.3] - 2026-10-13
 
 Workflow maintenance release.

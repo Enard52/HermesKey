@@ -5,7 +5,9 @@ APP_NAME="HermesKey"
 APP_ID="hermeskey"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/$APP_ID"
+DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/$APP_ID"
 CONFIG_FILE="${HERMESKEY_CONFIG:-$CONFIG_DIR/hermeskey.env}"
+VERSION_FILE="${HERMESKEY_VERSION_FILE:-$DATA_DIR/VERSION}"
 
 if [[ -f "$CONFIG_FILE" ]]; then
   set -a
@@ -52,10 +54,73 @@ OVERLAY_SCRIPT="$OVERLAY_SCRIPT_DEFAULT"
 LOG="${LOG:-/tmp/hermeskey.log}"
 SERVER_LOG="${SERVER_LOG:-/tmp/hermeskey-server.log}"
 OVERLAY_LOG="${OVERLAY_LOG:-/tmp/hermeskey-overlay.log}"
+VERSION="${HERMESKEY_VERSION:-}"
+if [[ -z "$VERSION" && -r "$VERSION_FILE" ]]; then
+  VERSION="$(tr -d '[:space:]' < "$VERSION_FILE")"
+fi
+if [[ -z "$VERSION" && -r "$SCRIPT_DIR/../VERSION" ]]; then
+  VERSION="$(tr -d '[:space:]' < "$SCRIPT_DIR/../VERSION")"
+fi
+[[ -n "$VERSION" ]] || VERSION="dev"
 
 touch "$LOG"
 
 log() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
+
+usage() {
+  cat <<EOF
+$APP_NAME $VERSION
+
+Usage:
+  hermeskey             Toggle recording on/off
+  hermeskey --doctor    Run HermesKey diagnostics
+  hermeskey --status    Show runtime and service status
+  hermeskey --version   Print version
+  hermeskey --help      Show this help
+
+Config file:
+  $CONFIG_FILE
+EOF
+}
+
+run_doctor() {
+  if command -v hermeskey-doctor >/dev/null 2>&1; then
+    exec hermeskey-doctor
+  elif [[ -x "$SCRIPT_DIR/hermeskey-doctor" ]]; then
+    exec "$SCRIPT_DIR/hermeskey-doctor"
+  else
+    printf 'hermeskey-doctor not found.\n' >&2
+    exit 1
+  fi
+}
+
+service_status_line() {
+  local unit="$1"
+  if systemctl --user is-active --quiet "$unit" 2>/dev/null; then
+    printf 'active\n'
+  elif systemctl --user is-enabled --quiet "$unit" 2>/dev/null; then
+    printf 'installed (inactive)\n'
+  else
+    printf 'not enabled\n'
+  fi
+}
+
+print_status() {
+  cat <<EOF
+$APP_NAME $VERSION
+
+config:    $CONFIG_FILE
+runtime:   $RUNTIME_DIR
+socket:    $SOCK
+recording: $( [[ -f "$STATE" ]] && printf yes || printf no )
+model:     $MODEL
+language:  $STT_LANG
+backend:   $TYPE_BACKEND
+insert:    $INSERT_MODE
+server:    $(service_status_line hermeskey.service)
+ydotoold:  $(service_status_line hermeskey-ydotoold.service)
+EOF
+}
 
 play_tone() {
   local freq="$1"
@@ -583,9 +648,30 @@ record_stop_and_transcribe() {
   insert_text "$transcription"
 }
 
-if [[ -f "$STATE" ]]; then
-  record_stop_and_transcribe
-else
-  record_start
-  echo "Recording... press hotkey again to stop."
-fi
+case "${1:-}" in
+  "")
+    if [[ -f "$STATE" ]]; then
+      record_stop_and_transcribe
+    else
+      record_start
+      echo "Recording... press hotkey again to stop."
+    fi
+    ;;
+  --help|-h)
+    usage
+    ;;
+  --version)
+    printf '%s\n' "$VERSION"
+    ;;
+  --doctor)
+    run_doctor
+    ;;
+  --status)
+    print_status
+    ;;
+  *)
+    printf 'Unknown argument: %s\n\n' "$1" >&2
+    usage >&2
+    exit 1
+    ;;
+esac

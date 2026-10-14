@@ -1,0 +1,15 @@
+pkgname=hermeskey
+pkgver=0.2.0
+pkgrel=1
+pkgdesc='Push-to-talk speech-to-text for Linux Wayland desktops'
+arch=('any')
+url='https://github.com/graygarbage/HermesKey'
+license=('MIT')
+depends=('bash' 'ffmpeg' 'wl-clipboard' 'libnotify' 'ydotool' 'python' 'python-pip')
+source=("$pkgname-$pkgver.tar.gz::https://github.com/graygarbage/HermesKey/releases/download/v${pkgver}/hermeskey-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+package() {
+  install -d "$pkgdir/usr/share/hermeskey"
+  cp -a "$srcdir"/* "$pkgdir/usr/share/hermeskey/"
+}

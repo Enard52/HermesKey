@@ -179,6 +179,17 @@ For a KDE walkthrough, see [docs/HOTKEYS.md](docs/HOTKEYS.md).
 - press again to stop and transcribe
 - HermesKey copies to clipboard and types into the active app
 
+## CLI
+
+HermesKey also behaves like a proper command:
+
+```bash
+hermeskey --help
+hermeskey --version
+hermeskey --status
+hermeskey --doctor
+```
+
 ## How it works
 
 HermesKey is intentionally small and inspectable.
@@ -208,6 +219,8 @@ A minimal overlay process designed to be:
 See also:
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/FAQ.md](docs/FAQ.md)
+- [docs/RELEASING.md](docs/RELEASING.md)
+- [docs/PACKAGING.md](docs/PACKAGING.md)
 
 ## Installed files
 
@@ -329,10 +342,23 @@ Build a release tarball:
 make package
 ```
 
+Cut a release tag using the helper script:
+
+```bash
+./scripts/release.sh
+```
+
+## Distribution roadmap
+
+- RPM / COPR path for Fedora-family systems
+- AUR packaging once the install path settles further
+- better distro-native installation beyond bootstrap-from-source
+
+See [docs/PACKAGING.md](docs/PACKAGING.md).
+
 ## Roadmap
 
 - richer per-app configuration
-- packaged releases for common distros
 - improved compositor detection outside KDE
 - optional GUI configuration surface
 - cleaner branding and demo media
