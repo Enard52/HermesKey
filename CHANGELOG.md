@@ -6,6 +6,16 @@ All notable changes to HermesKey will be documented in this file.
 
 - TBD
 
+## [0.4.1] - 2026-10-13
+
+Documentation and installer polish release.
+
+### Changed
+
+- simplified the README and moved detailed material into deep-dive docs
+- cleaned installer output for bootstrap installs
+- replaced temporary local doc paths with stable GitHub doc links
+
 ## [0.4.0] - 2026-10-13
 
 Desktop utility polish release.

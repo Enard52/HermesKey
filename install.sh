@@ -85,9 +85,11 @@ printf 'Version file:  %s\n' "$VERSION_DEST"
 printf 'Hotkey target: %s\n' "$BIN_DEST/hermeskey"
 printf 'Launchers:     %s\n' "$APPLICATIONS_DEST"
 printf 'Control app:   %s\n\n' "$BIN_DEST/hermeskey-control-center"
-printf 'Suggested next steps:\n'
-printf '  1. Activate your Python venv if needed.\n'
-printf '  2. Edit %s\n' "$CONFIG_DEST"
-printf '  3. Bind your desktop hotkey to: %s\n' "$BIN_DEST/hermeskey"
-printf '  4. Restart after config changes: systemctl --user restart hermeskey.service\n'
-printf '  5. Read docs: %s\n' "$ROOT/docs/INSTALL.md"
+
+if [[ "${HERMESKEY_INSTALL_CONTEXT:-}" != "bootstrap" ]]; then
+  printf 'Suggested next steps:\n'
+printf '  1. Edit %s\n' "$CONFIG_DEST"
+printf '  2. Bind your desktop hotkey to: %s\n' "$BIN_DEST/hermeskey"
+printf '  3. Restart after config changes: systemctl --user restart hermeskey.service\n'
+printf '  4. Read docs: %s\n' 'https://github.com/graygarbage/HermesKey/blob/main/docs/INSTALL.md'
+fi

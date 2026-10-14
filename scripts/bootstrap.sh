@@ -155,7 +155,7 @@ setup_python_env
 
 step "Running HermesKey installer"
 chmod +x "$ROOT/install.sh"
-bash "$ROOT/install.sh"
+HERMESKEY_INSTALL_CONTEXT=bootstrap bash "$ROOT/install.sh"
 
 ok "HermesKey bootstrap complete"
 say
@@ -166,7 +166,8 @@ say "  • ~/.config/systemd/user/hermeskey-ydotoold.service"
 say "  • ~/.config/hermeskey/hermeskey.env"
 say
 say "${BOLD}Next steps${RESET}"
-say "  1. Edit ~/.config/hermeskey/hermeskey.env"
+say "  1. Edit ~/.config/hermeskey/hermeskey.env if your mic or language needs adjustment"
 say "  2. Bind your desktop hotkey to: ~/.local/bin/hermeskey"
 say "  3. Check runtime health with: hermeskey --status"
 say "  4. Run diagnostics anytime with: hermeskey-doctor"
+say "  5. Read the install guide: https://github.com/graygarbage/HermesKey/blob/main/docs/INSTALL.md"
