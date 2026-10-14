@@ -61,6 +61,14 @@ if [[ ! -f "$CONFIG_DEST" ]]; then
   install -m 0644 "$ROOT/config/hermeskey.env.example" "$CONFIG_DEST"
 fi
 
+# Record a non-default venv location so the service, doctor, and hotkey
+# script use it (they default to ~/venvs/stt).
+if [[ -n "${HERMESKEY_VENV:-}" && "${HERMESKEY_VENV%/}" != "$HOME/venvs/stt" ]] \
+  && ! grep -q '^PYTHON_STT=' "$CONFIG_DEST"; then
+  printf '\n# Python used for the speech server (set by the installer)\nPYTHON_STT="%s/bin/python"\n' "${HERMESKEY_VENV%/}" >> "$CONFIG_DEST"
+  printf 'Recorded custom venv in %s\n' "$CONFIG_DEST"
+fi
+
 ln -sfn "$BIN_DEST/hermeskey" "$BIN_DEST/ptt_stt_toggle.sh"
 ln -sfn "$BIN_DEST/hermeskey-server.py" "$BIN_DEST/ptt_stt_server.py"
 ln -sfn "$BIN_DEST/hermeskey-overlay.py" "$BIN_DEST/ptt_stt_overlay.py"

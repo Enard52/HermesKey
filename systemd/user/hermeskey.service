@@ -7,7 +7,7 @@ Wants=graphical-session.target
 Type=simple
 EnvironmentFile=-%h/.config/hermeskey/hermeskey.env
 Environment=PYTHONUNBUFFERED=1
-ExecStart=/usr/bin/bash -lc '%h/venvs/stt/bin/python %h/.local/bin/hermeskey-server.py --socket "${SOCK:-$XDG_RUNTIME_DIR/hermeskey.sock}" --model "${MODEL:-medium}" --lang "$${STT_LANG-en}"'
+ExecStart=/usr/bin/bash -lc '"$${PYTHON_STT:-%h/venvs/stt/bin/python}" %h/.local/bin/hermeskey-server.py --socket "${SOCK:-$XDG_RUNTIME_DIR/hermeskey.sock}" --model "${MODEL:-medium}" --lang "$${STT_LANG-en}"'
 Restart=on-failure
 RestartSec=2
 

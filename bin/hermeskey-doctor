@@ -25,10 +25,21 @@ for cmd in ffmpeg python3 wl-copy notify-send ydotool ydotoold pactl paplay; do
 done
 
 section 'Python venv'
-if [[ -x "$HOME/venvs/stt/bin/python" ]]; then
-  ok "venv python found: $HOME/venvs/stt/bin/python"
+PYTHON_STT="$(
+  CONFIG_FILE="${HERMESKEY_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/hermeskey/hermeskey.env}"
+  # shellcheck disable=SC1090
+  [[ -f "$CONFIG_FILE" ]] && source "$CONFIG_FILE" >/dev/null 2>&1
+  printf '%s' "${PYTHON_STT:-$HOME/venvs/stt/bin/python}"
+)"
+if [[ -x "$PYTHON_STT" ]]; then
+  ok "venv python found: $PYTHON_STT"
+  if "$PYTHON_STT" -c 'import faster_whisper' >/dev/null 2>&1; then
+    ok 'faster-whisper is installed in the venv'
+  else
+    fail "faster-whisper is not installed for $PYTHON_STT"
+  fi
 else
-  warn "venv python missing: $HOME/venvs/stt/bin/python"
+  warn "venv python missing: $PYTHON_STT"
 fi
 
 section 'Active window detection'
