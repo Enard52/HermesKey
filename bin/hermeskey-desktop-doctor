@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+TMP_FILE="$(mktemp)"
+trap 'rm -f "$TMP_FILE"' EXIT
+
+hermeskey-doctor >"$TMP_FILE"
+
+if command -v kdialog >/dev/null 2>&1; then
+  kdialog --title "HermesKey Doctor" --textbox "$TMP_FILE" 760 560
+  exit 0
+fi
+
+if command -v zenity >/dev/null 2>&1; then
+  zenity --text-info --title="HermesKey Doctor" --width=820 --height=620 --filename="$TMP_FILE"
+  exit 0
+fi
+
+cat "$TMP_FILE"

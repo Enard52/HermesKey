@@ -190,6 +190,24 @@ hermeskey --status
 hermeskey --doctor
 ```
 
+## Desktop integration
+
+The installer also drops a few desktop launchers into your local applications menu:
+
+- **HermesKey Status**
+- **HermesKey Doctor**
+- **HermesKey Config**
+
+These are helpers for inspection and support. For actual dictation, keep binding your shortcut directly to:
+
+```bash
+~/.local/bin/hermeskey
+```
+
+More detail:
+- [docs/DESKTOP-INTEGRATION.md](docs/DESKTOP-INTEGRATION.md)
+- [docs/HOTKEYS.md](docs/HOTKEYS.md)
+
 ## How it works
 
 HermesKey is intentionally small and inspectable.
@@ -221,6 +239,7 @@ See also:
 - [docs/FAQ.md](docs/FAQ.md)
 - [docs/RELEASING.md](docs/RELEASING.md)
 - [docs/PACKAGING.md](docs/PACKAGING.md)
+- [docs/DESKTOP-INTEGRATION.md](docs/DESKTOP-INTEGRATION.md)
 
 ## Installed files
 
@@ -230,6 +249,13 @@ See also:
 - `~/.local/bin/hermeskey-server.py`
 - `~/.local/bin/hermeskey-overlay.py`
 - `~/.local/bin/hermeskey-doctor`
+- `~/.local/bin/hermeskey-desktop-status`
+- `~/.local/bin/hermeskey-desktop-doctor`
+- `~/.local/bin/hermeskey-open-config`
+- `~/.local/share/applications/hermeskey-status.desktop`
+- `~/.local/share/applications/hermeskey-doctor.desktop`
+- `~/.local/share/applications/hermeskey-config.desktop`
+- `~/.local/share/metainfo/hermeskey.metainfo.xml`
 - `~/.config/systemd/user/hermeskey.service`
 - `~/.config/systemd/user/hermeskey-ydotoold.service`
 - `~/.config/hermeskey/hermeskey.env`

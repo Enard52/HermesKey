@@ -35,5 +35,7 @@ This repository includes early packaging scaffolding:
 
 - `packaging/rpm/hermeskey.spec`
 - `packaging/aur/PKGBUILD`
+- desktop launcher templates under `desktop/`
+- AppStream metadata: `desktop/hermeskey.metainfo.xml`
 
 These are starting points, not guaranteed production-ready packages.

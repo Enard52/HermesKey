@@ -119,6 +119,20 @@ systemctl --user status hermeskey.service
 systemctl --user status hermeskey-ydotoold.service
 ```
 
+## Desktop launchers
+
+The installer also adds local desktop launchers for:
+
+- HermesKey Status
+- HermesKey Doctor
+- HermesKey Config
+
+For actual dictation, keep binding your hotkey to:
+
+```bash
+~/.local/bin/hermeskey
+```
+
 ## Run the doctor
 
 ```bash

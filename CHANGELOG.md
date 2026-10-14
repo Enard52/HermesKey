@@ -6,6 +6,23 @@ All notable changes to HermesKey will be documented in this file.
 
 - TBD
 
+## [0.3.0] - 2026-10-13
+
+Desktop integration and packaging-first release.
+
+### Added
+
+- desktop launcher helpers for status, doctor, and config access
+- desktop entry templates and AppStream metadata scaffold
+- packaging guidance and updated RPM / AUR starter files
+- release helper script and CLI status plumbing improvements
+
+### Changed
+
+- improved installer output and installed-file reporting
+- documented desktop integration and launcher behavior
+- expanded README and install docs around integration and distribution
+
 ## [0.2.0] - 2026-10-13
 
 Command-and-distribution polish release.

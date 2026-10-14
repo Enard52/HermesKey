@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=HermesKey Config
+Comment=Open the HermesKey configuration file
+Exec=@BIN_DEST@/hermeskey-open-config
+Icon=text-x-script
+Terminal=false
+Categories=Settings;Utility;
+Keywords=speech;dictation;config;settings;

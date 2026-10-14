@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.graygarbage.HermesKey</id>
+  <name>HermesKey</name>
+  <summary>Push-to-talk speech-to-text for Linux Wayland desktops</summary>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+  <developer_name>Gray Garbage</developer_name>
+  <url type="homepage">https://github.com/graygarbage/HermesKey</url>
+  <description>
+    <p>HermesKey is a local-first push-to-talk speech-to-text tool for Linux Wayland desktops. It keeps faster-whisper warm in a background service and types the result back into the active app.</p>
+  </description>
+  <launchable type="desktop-id">hermeskey-status.desktop</launchable>
+  <provides>
+    <binary>hermeskey</binary>
+  </provides>
+  <categories>
+    <category>Utility</category>
+    <category>AudioVideo</category>
+  </categories>
+</component>

@@ -1,5 +1,5 @@
 pkgname=hermeskey
-pkgver=0.2.0
+pkgver=0.3.0
 pkgrel=1
 pkgdesc='Push-to-talk speech-to-text for Linux Wayland desktops'
 arch=('any')
