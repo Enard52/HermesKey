@@ -19,6 +19,7 @@ Use this page as the map for the detailed documentation.
 - [ARCHITECTURE.md](ARCHITECTURE.md) — runtime layout and design
 - [PACKAGING.md](PACKAGING.md) — RPM/AUR direction and packaging notes
 - [RELEASING.md](RELEASING.md) — release checklist and tooling
+- [ROADMAP.md](ROADMAP.md) — planned milestones and product direction
 
 ## Project policies
 
