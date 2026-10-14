@@ -110,6 +110,8 @@ Set your desktop shortcut target to:
 ~/.local/bin/hermeskey
 ```
 
+For a KDE walkthrough, see [HOTKEYS.md](HOTKEYS.md).
+
 ## Verify services
 
 ```bash
