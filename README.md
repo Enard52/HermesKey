@@ -39,37 +39,14 @@ It may work elsewhere, but KDE Wayland is the first-class target right now.
 
 ## Quick start
 
-### 1. Install system dependencies
+### Fast path
 
-Typical requirements:
+If your system dependencies are already installed, this one-liner will:
 
-- `ffmpeg`
-- `wl-clipboard`
-- `libnotify` / `notify-send`
-- `ydotool`
-- `python3`
-- `python3-pip`
-- `python3-venv`
-- `PySide6` runtime support
-- `qdbus` on KDE
-- `paplay`
-
-See [docs/INSTALL.md](docs/INSTALL.md) for distro-specific guidance.
-
-### 2. Create the Python environment
-
-```bash
-python3 -m venv ~/venvs/stt
-source ~/venvs/stt/bin/activate
-pip install -U pip
-pip install -r requirements.txt
-```
-
-### 3. Install HermesKey
-
-#### One-line installer
-
-After installing system dependencies and creating the Python environment, you can download the latest release and run the installer with one command:
+- download the latest HermesKey release
+- create `~/venvs/stt` if needed
+- install Python dependencies
+- install the HermesKey scripts and user services
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash
@@ -81,14 +58,83 @@ To install directly from the current `main` branch instead of the latest tagged 
 curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash -s -- --main
 ```
 
-#### Manual install
+### 1. Install system dependencies
+
+#### Fedora / Nobara
 
 ```bash
+sudo dnf install \
+  ffmpeg \
+  wl-clipboard \
+  libnotify \
+  ydotool \
+  python3 \
+  python3-pip \
+  python3-virtualenv \
+  python3-qt6 \
+  qt6-qtwayland \
+  plasma-workspace \
+  pulseaudio-utils
+```
+
+#### Arch / EndeavourOS
+
+```bash
+sudo pacman -S --needed \
+  ffmpeg \
+  wl-clipboard \
+  libnotify \
+  ydotool \
+  python \
+  python-pip \
+  python-virtualenv \
+  pyside6 \
+  qt6-wayland \
+  plasma-workspace \
+  libpulse
+```
+
+#### Ubuntu / Debian
+
+```bash
+sudo apt-get update
+sudo apt-get install -y \
+  ffmpeg \
+  wl-clipboard \
+  libnotify-bin \
+  ydotool \
+  python3 \
+  python3-pip \
+  python3-venv \
+  python3-pyside6.qtcore \
+  python3-pyside6.qtgui \
+  python3-pyside6.qtwidgets \
+  qt6-wayland \
+  pulseaudio-utils
+```
+
+See [docs/INSTALL.md](docs/INSTALL.md) for notes and troubleshooting.
+
+### 2. Install HermesKey
+
+#### One-line installer
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash
+```
+
+#### Manual path
+
+```bash
+python3 -m venv ~/venvs/stt
+source ~/venvs/stt/bin/activate
+pip install -U pip
+pip install -r requirements.txt
 chmod +x install.sh
 ./install.sh
 ```
 
-### 4. Bind your hotkey
+### 3. Bind your hotkey
 
 Point your desktop shortcut at:
 
@@ -96,7 +142,7 @@ Point your desktop shortcut at:
 ~/.local/bin/hermeskey
 ```
 
-### 5. Dictate
+### 4. Dictate
 
 - press once to start recording
 - press again to stop and transcribe

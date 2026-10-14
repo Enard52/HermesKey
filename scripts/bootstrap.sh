@@ -5,37 +5,77 @@ REPO="graygarbage/HermesKey"
 API_URL="https://api.github.com/repos/$REPO/releases/latest"
 MAIN_TARBALL_URL="https://github.com/$REPO/archive/refs/heads/main.tar.gz"
 CHANNEL="release"
+VENV_DIR="${HERMESKEY_VENV:-$HOME/venvs/stt}"
+SKIP_VENV="${HERMESKEY_SKIP_VENV:-0}"
+
+if [[ -t 1 ]]; then
+  BOLD='\033[1m'
+  BLUE='\033[34m'
+  GREEN='\033[32m'
+  YELLOW='\033[33m'
+  RED='\033[31m'
+  RESET='\033[0m'
+else
+  BOLD=''
+  BLUE=''
+  GREEN=''
+  YELLOW=''
+  RED=''
+  RESET=''
+fi
+
+say() { printf '%b\n' "$*"; }
+step() { say "${BLUE}${BOLD}==>${RESET} $*"; }
+ok() { say "${GREEN}${BOLD}✔${RESET} $*"; }
+warn() { say "${YELLOW}${BOLD}!${RESET} $*"; }
+fail() { say "${RED}${BOLD}✘${RESET} $*" >&2; exit 1; }
+
+usage() {
+  cat <<EOF
+HermesKey bootstrap installer
+
+Usage:
+  bash bootstrap.sh [--main] [--skip-venv]
+
+Options:
+  --main       install from the current main branch instead of the latest release
+  --skip-venv  skip Python venv creation and pip install
+EOF
+}
 
 for arg in "$@"; do
   case "$arg" in
     --main)
       CHANNEL="main"
       ;;
+    --skip-venv)
+      SKIP_VENV=1
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
     *)
-      printf 'Unknown argument: %s\n' "$arg" >&2
-      exit 1
+      fail "Unknown argument: $arg"
       ;;
   esac
 done
 
 need_cmd() {
-  command -v "$1" >/dev/null 2>&1 || {
-    printf 'Missing required command: %s\n' "$1" >&2
-    exit 1
-  }
+  command -v "$1" >/dev/null 2>&1 || fail "Missing required command: $1"
 }
 
 need_cmd bash
 need_cmd curl
 need_cmd tar
 need_cmd mktemp
+need_cmd python3
 
 latest_asset_url() {
   local json
   json="$(curl -fsSL "$API_URL")"
 
-  if command -v python3 >/dev/null 2>&1; then
-    RELEASE_JSON="$json" python3 - <<'PY'
+  RELEASE_JSON="$json" python3 - <<'PY'
 import json
 import os
 
@@ -47,10 +87,6 @@ for asset in payload.get('assets', []):
         raise SystemExit(0)
 raise SystemExit(1)
 PY
-    return 0
-  fi
-
-  printf '%s\n' "$json" | grep -Eo 'https://[^[:space:]"]+hermeskey-[^"]+\.tar\.gz' | head -n1
 }
 
 download_url() {
@@ -59,7 +95,30 @@ download_url() {
     return 0
   fi
 
-  latest_asset_url
+  latest_asset_url || {
+    warn "Could not resolve latest release asset, falling back to main branch archive."
+    printf '%s\n' "$MAIN_TARBALL_URL"
+  }
+}
+
+setup_python_env() {
+  [[ "$SKIP_VENV" == "1" ]] && {
+    warn "Skipping Python environment setup because --skip-venv was requested."
+    return 0
+  }
+
+  step "Preparing Python environment at $VENV_DIR"
+
+  if [[ ! -x "$VENV_DIR/bin/python" ]]; then
+    python3 -m venv "$VENV_DIR" || fail "Failed to create venv at $VENV_DIR. Make sure python3-venv is installed."
+    ok "Created venv: $VENV_DIR"
+  else
+    ok "Using existing venv: $VENV_DIR"
+  fi
+
+  "$VENV_DIR/bin/python" -m pip install -U pip wheel >/dev/null
+  "$VENV_DIR/bin/pip" install -r "$ROOT/requirements.txt"
+  ok "Python dependencies installed"
 }
 
 TMP_DIR="$(mktemp -d)"
@@ -69,7 +128,8 @@ ARCHIVE_URL="$(download_url)"
 ARCHIVE_PATH="$TMP_DIR/hermeskey.tar.gz"
 EXTRACT_DIR="$TMP_DIR/extract"
 
-printf 'Downloading HermesKey from: %s\n' "$ARCHIVE_URL"
+step "Downloading HermesKey"
+say "Source: $ARCHIVE_URL"
 curl -fsSL "$ARCHIVE_URL" -o "$ARCHIVE_PATH"
 mkdir -p "$EXTRACT_DIR"
 tar -xzf "$ARCHIVE_PATH" -C "$EXTRACT_DIR"
@@ -80,10 +140,18 @@ else
   ROOT="$(find "$EXTRACT_DIR" -mindepth 1 -maxdepth 1 -type d | head -n1)"
 fi
 
-if [[ -z "${ROOT:-}" || ! -f "$ROOT/install.sh" ]]; then
-  printf 'Could not find install.sh in extracted archive.\n' >&2
-  exit 1
-fi
+[[ -n "${ROOT:-}" && -f "$ROOT/install.sh" ]] || fail "Could not find install.sh in extracted archive."
 
+ok "Archive extracted"
+setup_python_env
+
+step "Running HermesKey installer"
 chmod +x "$ROOT/install.sh"
-exec bash "$ROOT/install.sh"
+bash "$ROOT/install.sh"
+
+ok "HermesKey bootstrap complete"
+say
+say "Next steps:"
+say "  1. Edit ~/.config/hermeskey/hermeskey.env"
+say "  2. Bind your desktop hotkey to: ~/.local/bin/hermeskey"
+say "  3. Run diagnostics anytime with: hermeskey-doctor"
