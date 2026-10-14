@@ -43,6 +43,9 @@ install -m 0755 "$ROOT/bin/hermeskey-doctor" "$BIN_DEST/hermeskey-doctor"
 install -m 0755 "$ROOT/bin/hermeskey-desktop-status" "$BIN_DEST/hermeskey-desktop-status"
 install -m 0755 "$ROOT/bin/hermeskey-desktop-doctor" "$BIN_DEST/hermeskey-desktop-doctor"
 install -m 0755 "$ROOT/bin/hermeskey-open-config" "$BIN_DEST/hermeskey-open-config"
+install -m 0755 "$ROOT/bin/hermeskey-open-logs" "$BIN_DEST/hermeskey-open-logs"
+install -m 0755 "$ROOT/bin/hermeskey-restart-services" "$BIN_DEST/hermeskey-restart-services"
+install -m 0755 "$ROOT/bin/hermeskey-control-center" "$BIN_DEST/hermeskey-control-center"
 install -m 0644 "$ROOT/systemd/user/hermeskey.service" "$SYSTEMD_DEST/hermeskey.service"
 install -m 0644 "$ROOT/systemd/user/hermeskey-ydotoold.service" "$SYSTEMD_DEST/hermeskey-ydotoold.service"
 install -m 0644 "$ROOT/config/hermeskey.env.example" "$CONFIG_EXAMPLE_DEST"
@@ -51,6 +54,8 @@ install -m 0644 "$ROOT/desktop/hermeskey.metainfo.xml" "$METADATA_DEST/hermeskey
 sed "s|@BIN_DEST@|$BIN_DEST|g" "$ROOT/desktop/hermeskey-status.desktop.in" > "$APPLICATIONS_DEST/hermeskey-status.desktop"
 sed "s|@BIN_DEST@|$BIN_DEST|g" "$ROOT/desktop/hermeskey-doctor.desktop.in" > "$APPLICATIONS_DEST/hermeskey-doctor.desktop"
 sed "s|@BIN_DEST@|$BIN_DEST|g" "$ROOT/desktop/hermeskey-config.desktop.in" > "$APPLICATIONS_DEST/hermeskey-config.desktop"
+sed "s|@BIN_DEST@|$BIN_DEST|g" "$ROOT/desktop/hermeskey-logs.desktop.in" > "$APPLICATIONS_DEST/hermeskey-logs.desktop"
+sed "s|@BIN_DEST@|$BIN_DEST|g" "$ROOT/desktop/hermeskey-control-center.desktop.in" > "$APPLICATIONS_DEST/hermeskey-control-center.desktop"
 
 if [[ ! -f "$CONFIG_DEST" ]]; then
   install -m 0644 "$ROOT/config/hermeskey.env.example" "$CONFIG_DEST"
@@ -78,7 +83,8 @@ printf 'Doctor tool:   %s\n' "$BIN_DEST/hermeskey-doctor"
 printf 'Config file:   %s\n' "$CONFIG_DEST"
 printf 'Version file:  %s\n' "$VERSION_DEST"
 printf 'Hotkey target: %s\n' "$BIN_DEST/hermeskey"
-printf 'Launchers:     %s\n\n' "$APPLICATIONS_DEST"
+printf 'Launchers:     %s\n' "$APPLICATIONS_DEST"
+printf 'Control app:   %s\n\n' "$BIN_DEST/hermeskey-control-center"
 printf 'Suggested next steps:\n'
 printf '  1. Activate your Python venv if needed.\n'
 printf '  2. Edit %s\n' "$CONFIG_DEST"

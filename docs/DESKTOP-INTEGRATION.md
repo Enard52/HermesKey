@@ -4,8 +4,10 @@ HermesKey is primarily a hotkey-driven tool, but the installer also ships a few 
 
 ## Installed launchers
 
+- **HermesKey Control Center** — one place for status, diagnostics, config, logs, and service restart
 - **HermesKey Status** — shows runtime and service status
 - **HermesKey Doctor** — runs diagnostics and shows the report
+- **HermesKey Logs** — shows runtime and service logs
 - **HermesKey Config** — opens `~/.config/hermeskey/hermeskey.env`
 
 These launchers are installed into:
@@ -13,6 +15,8 @@ These launchers are installed into:
 ```bash
 ~/.local/share/applications/
 ```
+
+The control-center launcher uses `kdialog` on KDE when available and falls back to `zenity` or plain terminal output.
 
 ## Why not a big GUI app?
 

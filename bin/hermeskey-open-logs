@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+TMP_FILE="$(mktemp)"
+trap 'rm -f "$TMP_FILE"' EXIT
+
+{
+  printf '== HermesKey runtime log ==\n\n'
+  tail -n 120 /tmp/hermeskey.log 2>/dev/null || printf 'No runtime log found.\n'
+  printf '\n== hermeskey.service ==\n\n'
+  journalctl --user -u hermeskey.service -n 80 --no-pager 2>/dev/null || printf 'No service log available.\n'
+  printf '\n== hermeskey-ydotoold.service ==\n\n'
+  journalctl --user -u hermeskey-ydotoold.service -n 80 --no-pager 2>/dev/null || printf 'No ydotoold log available.\n'
+} >"$TMP_FILE"
+
+if command -v kdialog >/dev/null 2>&1; then
+  kdialog --title "HermesKey Logs" --textbox "$TMP_FILE" 860 640
+  exit 0
+fi
+
+if command -v zenity >/dev/null 2>&1; then
+  zenity --text-info --title="HermesKey Logs" --width=920 --height=680 --filename="$TMP_FILE"
+  exit 0
+fi
+
+cat "$TMP_FILE"

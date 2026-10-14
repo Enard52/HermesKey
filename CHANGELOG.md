@@ -6,6 +6,21 @@ All notable changes to HermesKey will be documented in this file.
 
 - TBD
 
+## [0.4.0] - 2026-10-13
+
+Desktop utility polish release.
+
+### Added
+
+- HermesKey Control Center desktop helper
+- desktop log viewer and service restart helper
+- expanded local desktop launcher set and docs
+
+### Changed
+
+- improved installer integration for local application launchers
+- strengthened desktop integration documentation and installed-file reporting
+
 ## [0.3.0] - 2026-10-13
 
 Desktop integration and packaging-first release.

@@ -194,8 +194,10 @@ hermeskey --doctor
 
 The installer also drops a few desktop launchers into your local applications menu:
 
+- **HermesKey Control Center**
 - **HermesKey Status**
 - **HermesKey Doctor**
+- **HermesKey Logs**
 - **HermesKey Config**
 
 These are helpers for inspection and support. For actual dictation, keep binding your shortcut directly to:
@@ -252,9 +254,14 @@ See also:
 - `~/.local/bin/hermeskey-desktop-status`
 - `~/.local/bin/hermeskey-desktop-doctor`
 - `~/.local/bin/hermeskey-open-config`
+- `~/.local/bin/hermeskey-open-logs`
+- `~/.local/bin/hermeskey-restart-services`
+- `~/.local/bin/hermeskey-control-center`
 - `~/.local/share/applications/hermeskey-status.desktop`
 - `~/.local/share/applications/hermeskey-doctor.desktop`
 - `~/.local/share/applications/hermeskey-config.desktop`
+- `~/.local/share/applications/hermeskey-logs.desktop`
+- `~/.local/share/applications/hermeskey-control-center.desktop`
 - `~/.local/share/metainfo/hermeskey.metainfo.xml`
 - `~/.config/systemd/user/hermeskey.service`
 - `~/.config/systemd/user/hermeskey-ydotoold.service`

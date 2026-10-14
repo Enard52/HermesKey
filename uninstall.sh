@@ -19,6 +19,9 @@ rm -f \
   "$BIN_DEST/hermeskey-desktop-status" \
   "$BIN_DEST/hermeskey-desktop-doctor" \
   "$BIN_DEST/hermeskey-open-config" \
+  "$BIN_DEST/hermeskey-open-logs" \
+  "$BIN_DEST/hermeskey-restart-services" \
+  "$BIN_DEST/hermeskey-control-center" \
   "$BIN_DEST/ptt_stt_toggle.sh" \
   "$BIN_DEST/ptt_stt_server.py" \
   "$BIN_DEST/ptt_stt_overlay.py" \
@@ -27,6 +30,8 @@ rm -f \
   "$APPLICATIONS_DEST/hermeskey-status.desktop" \
   "$APPLICATIONS_DEST/hermeskey-doctor.desktop" \
   "$APPLICATIONS_DEST/hermeskey-config.desktop" \
+  "$APPLICATIONS_DEST/hermeskey-logs.desktop" \
+  "$APPLICATIONS_DEST/hermeskey-control-center.desktop" \
   "$METADATA_DEST/hermeskey.metainfo.xml" \
   "$DATA_DEST_DIR/VERSION"
 

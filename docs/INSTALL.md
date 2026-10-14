@@ -123,8 +123,10 @@ systemctl --user status hermeskey-ydotoold.service
 
 The installer also adds local desktop launchers for:
 
+- HermesKey Control Center
 - HermesKey Status
 - HermesKey Doctor
+- HermesKey Logs
 - HermesKey Config
 
 For actual dictation, keep binding your hotkey to:

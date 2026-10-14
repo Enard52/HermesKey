@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=HermesKey Control Center
+Comment=Open HermesKey status, diagnostics, logs, and config tools
+Exec=@BIN_DEST@/hermeskey-control-center
+Icon=applications-system
+Terminal=false
+Categories=Utility;AudioVideo;Settings;
+Keywords=speech;dictation;whisper;wayland;control;settings;

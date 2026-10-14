@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+systemctl --user restart hermeskey-ydotoold.service
+systemctl --user restart hermeskey.service
+
+message='HermesKey services restarted successfully.'
+
+if command -v kdialog >/dev/null 2>&1; then
+  kdialog --title "HermesKey" --passivepopup "$message" 4 >/dev/null 2>&1 || true
+  kdialog --title "HermesKey" --msgbox "$message"
+  exit 0
+fi
+
+if command -v zenity >/dev/null 2>&1; then
+  zenity --info --title="HermesKey" --text="$message"
+  exit 0
+fi
+
+printf '%s\n' "$message"
