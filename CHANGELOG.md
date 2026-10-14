@@ -6,6 +6,15 @@ All notable changes to HermesKey will be documented in this file.
 
 - TBD
 
+## [0.1.2] - 2026-10-13
+
+Maintenance release.
+
+### Changed
+
+- fixed CI unit verification for environments without `ydotoold` installed
+- kept release automation and package build green on GitHub Actions
+
 ## [0.1.1] - 2026-10-13
 
 Polish release focused on packaging, branding, and maintainability.

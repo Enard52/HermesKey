@@ -14,6 +14,9 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y shellcheck systemd
+          if ! command -v ydotoold >/dev/null 2>&1; then
+            sudo install -Dm755 /bin/true /usr/bin/ydotoold
+          fi
 
       - name: Shell syntax
         run: bash -n bin/hermeskey install.sh uninstall.sh scripts/check.sh scripts/build-release.sh
