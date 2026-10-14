@@ -89,7 +89,20 @@ else
 fi
 
 section 'Audio sources'
+RECORD_SOURCE="$(
+  CONFIG_FILE="${HERMESKEY_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/hermeskey/hermeskey.env}"
+  # shellcheck disable=SC1090
+  [[ -f "$CONFIG_FILE" ]] && source "$CONFIG_FILE" >/dev/null 2>&1
+  printf '%s' "${RECORD_SOURCE:-default}"
+)"
 if command -v pactl >/dev/null 2>&1; then
+  if [[ "$RECORD_SOURCE" == "default" ]]; then
+    ok "RECORD_SOURCE=default (currently: $(pactl get-default-source 2>/dev/null || echo unknown))"
+  elif pactl list short sources 2>/dev/null | cut -f2 | grep -qxF -- "$RECORD_SOURCE"; then
+    ok "RECORD_SOURCE found: $RECORD_SOURCE"
+  else
+    warn "RECORD_SOURCE not found: $RECORD_SOURCE (PipeWire may silently fall back to the default mic)"
+  fi
   pactl list short sources || true
 fi
 

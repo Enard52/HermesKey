@@ -13,12 +13,12 @@ The installer copies a starter file there on first install.
 ```bash
 MODEL=medium
 STT_LANG=en
-RECORD_SOURCE=alsa_input.usb-Beyerdynamic_FOX_5.00-00.mono-fallback
+RECORD_SOURCE=default
 ```
 
 - `MODEL`: any supported `faster-whisper` model name
 - `STT_LANG`: spoken language code; set empty for auto-detect
-- `RECORD_SOURCE`: microphone source from `pactl list short sources`
+- `RECORD_SOURCE`: `default` follows the desktop's default input; to pin a specific mic, use a name from `pactl list short sources`
 
 ## Insertion behavior
 

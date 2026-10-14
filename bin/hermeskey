@@ -37,7 +37,7 @@ SOCK="${SOCK:-$RUNTIME_DIR/hermeskey.sock}"
 SERVER_PID="${SERVER_PID:-$RUNTIME_DIR/hermeskey_server.pid}"
 TARGET_STATE="${TARGET_STATE:-$RUNTIME_DIR/hermeskey_target.env}"
 
-RECORD_SOURCE="${RECORD_SOURCE:-alsa_input.usb-Beyerdynamic_FOX_5.00-00.mono-fallback}"
+RECORD_SOURCE="${RECORD_SOURCE:-default}"
 CLIP_CMD="${CLIP_CMD:-wl-copy}"
 INSERT_MODE="${INSERT_MODE:-type}"
 COPY_TO_CLIPBOARD="${COPY_TO_CLIPBOARD:-1}"
