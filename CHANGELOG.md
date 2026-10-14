@@ -6,6 +6,15 @@ All notable changes to HermesKey will be documented in this file.
 
 - TBD
 
+## [0.1.3] - 2026-10-13
+
+Workflow maintenance release.
+
+### Changed
+
+- upgraded GitHub Actions workflow versions to current non-deprecated releases
+- kept CI and release automation aligned with the latest toolchain expectations
+
 ## [0.1.2] - 2026-10-13
 
 Maintenance release.
