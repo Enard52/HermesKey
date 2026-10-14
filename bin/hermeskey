@@ -25,7 +25,8 @@ SERVER_SCRIPT_DEFAULT="${SERVER_SCRIPT:-$SCRIPT_DIR/hermeskey-server.py}"
 OVERLAY_SCRIPT_DEFAULT="${OVERLAY_SCRIPT:-$SCRIPT_DIR/hermeskey-overlay.py}"
 
 MODEL="${MODEL:-medium}"
-STT_LANG="${STT_LANG:-en}"
+# Unset -> en; set but empty (STT_LANG=) -> auto-detect.
+STT_LANG="${STT_LANG-en}"
 
 RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
 WAV="${WAV:-$RUNTIME_DIR/hermeskey_audio.wav}"
@@ -120,7 +121,7 @@ runtime:   $RUNTIME_DIR
 socket:    $SOCK
 recording: $( [[ -f "$STATE" ]] && printf yes || printf no )
 model:     $MODEL
-language:  $STT_LANG
+language:  ${STT_LANG:-auto}
 backend:   $TYPE_BACKEND
 insert:    $INSERT_MODE
 server:    $(service_status_line hermeskey.service)
