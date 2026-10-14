@@ -72,6 +72,10 @@ if systemctl --user list-unit-files | grep -q '^ydotoold.service'; then
   systemctl --user disable --now ydotoold.service >/dev/null 2>&1 || true
 fi
 
+# Older versions kept audio and logs world-readable in /tmp. Remove our own
+# leftovers (the sticky bit on /tmp prevents touching other users' files).
+rm -f /tmp/hermeskey_audio.wav /tmp/hermeskey.log /tmp/hermeskey-server.log /tmp/hermeskey-overlay.log 2>/dev/null || true
+
 systemctl --user daemon-reload
 systemctl --user enable --now hermeskey-ydotoold.service
 systemctl --user enable --now hermeskey.service

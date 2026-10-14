@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Recordings, logs, and state files are private to the user.
+umask 077
+
 APP_NAME="HermesKey"
 APP_ID="hermeskey"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/$APP_ID"
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/$APP_ID"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/$APP_ID"
 CONFIG_FILE="${HERMESKEY_CONFIG:-$CONFIG_DIR/hermeskey.env}"
 VERSION_FILE="${HERMESKEY_VERSION_FILE:-$DATA_DIR/VERSION}"
 
@@ -24,7 +28,8 @@ MODEL="${MODEL:-medium}"
 STT_LANG="${STT_LANG:-en}"
 
 RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
-WAV="${WAV:-/tmp/hermeskey_audio.wav}"
+WAV="${WAV:-$RUNTIME_DIR/hermeskey_audio.wav}"
+KEEP_AUDIO="${KEEP_AUDIO:-0}"
 STATE="${STATE:-$RUNTIME_DIR/hermeskey_recording.pid}"
 OVERLAY_STATE="${OVERLAY_STATE:-$RUNTIME_DIR/hermeskey_overlay.pid}"
 SOCK="${SOCK:-$RUNTIME_DIR/hermeskey.sock}"
@@ -51,9 +56,9 @@ PYTHON_STT="$PYTHON_STT_DEFAULT"
 SERVER_SCRIPT="$SERVER_SCRIPT_DEFAULT"
 OVERLAY_SCRIPT="$OVERLAY_SCRIPT_DEFAULT"
 
-LOG="${LOG:-/tmp/hermeskey.log}"
-SERVER_LOG="${SERVER_LOG:-/tmp/hermeskey-server.log}"
-OVERLAY_LOG="${OVERLAY_LOG:-/tmp/hermeskey-overlay.log}"
+LOG="${LOG:-$STATE_DIR/hermeskey.log}"
+SERVER_LOG="${SERVER_LOG:-$STATE_DIR/hermeskey-server.log}"
+OVERLAY_LOG="${OVERLAY_LOG:-$STATE_DIR/hermeskey-overlay.log}"
 VERSION="${HERMESKEY_VERSION:-}"
 if [[ -z "$VERSION" && -r "$VERSION_FILE" ]]; then
   VERSION="$(tr -d '[:space:]' < "$VERSION_FILE")"
@@ -63,6 +68,7 @@ if [[ -z "$VERSION" && -r "$SCRIPT_DIR/../VERSION" ]]; then
 fi
 [[ -n "$VERSION" ]] || VERSION="dev"
 
+mkdir -p "$(dirname -- "$LOG")" "$(dirname -- "$SERVER_LOG")" "$(dirname -- "$OVERLAY_LOG")"
 touch "$LOG"
 
 log() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
@@ -592,6 +598,13 @@ print(reply.get("text", ""), end="")
 '
 }
 
+# Delete the recording once the server has processed it, so voice audio
+# does not linger on disk. Set KEEP_AUDIO=1 to keep it for debugging.
+discard_audio() {
+  [[ "$KEEP_AUDIO" == "1" ]] && return 0
+  rm -f "$WAV" 2>/dev/null || true
+}
+
 record_stop_and_transcribe() {
   if [[ ! -f "$STATE" ]]; then
     echo "Not recording."
@@ -637,8 +650,11 @@ record_stop_and_transcribe() {
 
   ensure_server
 
-  local reply transcription
-  if ! reply="$(request_transcription 2>>"$LOG")"; then
+  local reply transcription reply_ok=1
+  reply="$(request_transcription 2>>"$LOG")" || reply_ok=0
+  discard_audio
+
+  if [[ "$reply_ok" != "1" ]]; then
     hide_overlay
     log "Failed talking to STT server"
     notify-send "$APP_NAME" "Could not reach speech server" || true

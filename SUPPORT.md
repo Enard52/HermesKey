@@ -16,7 +16,7 @@ Please gather:
 - desktop environment / compositor
 - `echo $XDG_SESSION_TYPE`
 - whether `ydotool` works by itself
-- logs from `/tmp/hermeskey.log`
+- logs from `~/.local/state/hermeskey/hermeskey.log`
 - output from `systemctl --user status hermeskey.service`
 
 ## Questions

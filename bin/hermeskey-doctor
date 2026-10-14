@@ -68,4 +68,4 @@ systemctl --user --no-pager --full status hermeskey-ydotoold.service 2>/dev/null
 
 section 'Result'
 ok 'Doctor run complete.'
-printf 'If dictation still fails, include this output plus /tmp/hermeskey.log in your issue.\n'
+printf 'If dictation still fails, include this output plus %s in your issue.\n' "${XDG_STATE_HOME:-$HOME/.local/state}/hermeskey/hermeskey.log"

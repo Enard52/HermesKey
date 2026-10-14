@@ -27,7 +27,7 @@ journalctl --user -u hermeskey.service -n 100 --no-pager
 And the local runtime log:
 
 ```bash
-tail -n 100 /tmp/hermeskey.log
+tail -n 100 ~/.local/state/hermeskey/hermeskey.log
 ```
 
 ## The wrong microphone is used

@@ -58,7 +58,7 @@ Helpful bug reports include:
 - desktop environment / compositor
 - session type (`echo $XDG_SESSION_TYPE`)
 - hotkey method
-- relevant logs from `/tmp/hermeskey.log`
+- relevant logs from `~/.local/state/hermeskey/hermeskey.log`
 - `journalctl --user -u hermeskey.service`
 
 ## Design philosophy
