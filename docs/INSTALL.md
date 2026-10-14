@@ -39,6 +39,22 @@ pip install -r requirements.txt
 
 ## Install HermesKey
 
+### One-line installer
+
+After system dependencies and the Python environment are ready:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash
+```
+
+To install from the current `main` branch instead of the latest release:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash -s -- --main
+```
+
+### Manual install
+
 ```bash
 ./install.sh
 ```

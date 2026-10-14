@@ -19,10 +19,10 @@ jobs:
           fi
 
       - name: Shell syntax
-        run: bash -n bin/hermeskey install.sh uninstall.sh scripts/check.sh scripts/build-release.sh
+        run: bash -n bin/hermeskey bin/hermeskey-doctor install.sh uninstall.sh scripts/check.sh scripts/build-release.sh scripts/bootstrap.sh
 
       - name: Shellcheck
-        run: shellcheck bin/hermeskey install.sh uninstall.sh scripts/check.sh scripts/build-release.sh
+        run: shellcheck bin/hermeskey bin/hermeskey-doctor install.sh uninstall.sh scripts/check.sh scripts/build-release.sh scripts/bootstrap.sh
 
       - name: Python syntax
         run: python3 -m py_compile bin/hermeskey-server.py bin/hermeskey-overlay.py
