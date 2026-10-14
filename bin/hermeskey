@@ -473,20 +473,22 @@ insert_text() {
 
   load_target_app
 
+  # Capture the backend's exit code directly; `rc=$?` after an if/fi block
+  # would always read 0 and hide the real failure reason.
   if app_matches_patterns "$PASTE_FOR_APPS" "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION"; then
-    if paste_text "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION"; then
+    paste_text "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION" || rc=$?
+    if (( rc == 0 )); then
       log "Pasted transcription into active app (${#text} chars)."
       echo "Pasted into active app."
       return 0
     fi
-    rc=$?
   else
-    if type_text "$text"; then
+    type_text "$text" || rc=$?
+    if (( rc == 0 )); then
       log "Typed transcription into active app (${#text} chars)."
       echo "Typed into active app."
       return 0
     fi
-    rc=$?
   fi
 
   case "$rc" in
