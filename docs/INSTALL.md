@@ -76,8 +76,6 @@ If your system dependencies are already installed, the bootstrap script will:
 - install Python dependencies
 - run the installer
 
-#### Public repo
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash
 ```
@@ -92,14 +90,6 @@ To skip Python environment setup because you are managing it yourself:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash -s -- --skip-venv
-```
-
-#### Private repo
-
-If the repository is private, use authenticated `gh` access instead of the raw URL:
-
-```bash
-gh api repos/graygarbage/HermesKey/contents/scripts/bootstrap.sh?ref=main --jq .content | tr -d '\n' | base64 -d | bash
 ```
 
 ### Manual install

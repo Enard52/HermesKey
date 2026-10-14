@@ -69,8 +69,6 @@ If your system dependencies are already installed, the bootstrap script will:
 - install Python dependencies
 - install the HermesKey scripts and user services
 
-#### Public repo install
-
 ```bash
 curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash
 ```
@@ -79,14 +77,6 @@ To install directly from the current `main` branch instead of the latest tagged 
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash -s -- --main
-```
-
-#### Private repo install
-
-If the repository is private, raw GitHub URLs return `404` unless you use authenticated GitHub API access. This version uses `gh`:
-
-```bash
-gh api repos/graygarbage/HermesKey/contents/scripts/bootstrap.sh?ref=main --jq .content | tr -d '\n' | base64 -d | bash
 ```
 
 ### 1. Install system dependencies
