@@ -1,0 +1,15 @@
+[Unit]
+Description=HermesKey prewarmed faster-whisper server
+After=graphical-session.target
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+EnvironmentFile=-%h/.config/hermeskey/hermeskey.env
+Environment=PYTHONUNBUFFERED=1
+ExecStart=/usr/bin/bash -lc '%h/venvs/stt/bin/python %h/.local/bin/hermeskey-server.py --socket "${SOCK:-$XDG_RUNTIME_DIR/hermeskey.sock}" --model "${MODEL:-medium}" --lang "${STT_LANG:-en}"'
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=default.target

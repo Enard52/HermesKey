@@ -1,20 +1,33 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+APP_NAME="HermesKey"
+APP_ID="hermeskey"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/$APP_ID"
+CONFIG_FILE="${HERMESKEY_CONFIG:-$CONFIG_DIR/hermeskey.env}"
+
+if [[ -f "$CONFIG_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$CONFIG_FILE"
+  set +a
+fi
+
 PYTHON_STT_DEFAULT="${PYTHON_STT:-$HOME/venvs/stt/bin/python}"
-SERVER_SCRIPT_DEFAULT="${SERVER_SCRIPT:-$SCRIPT_DIR/ptt_stt_server.py}"
-OVERLAY_SCRIPT_DEFAULT="${OVERLAY_SCRIPT:-$SCRIPT_DIR/ptt_stt_overlay.py}"
+SERVER_SCRIPT_DEFAULT="${SERVER_SCRIPT:-$SCRIPT_DIR/hermeskey-server.py}"
+OVERLAY_SCRIPT_DEFAULT="${OVERLAY_SCRIPT:-$SCRIPT_DIR/hermeskey-overlay.py}"
 
 MODEL="${MODEL:-medium}"
 STT_LANG="${STT_LANG:-en}"
 
-WAV="/tmp/ptt_stt_audio.wav"
-STATE="/tmp/ptt_stt_recording.pid"
-OVERLAY_STATE="/tmp/ptt_stt_overlay.pid"
-SOCK="/tmp/ptt_stt.sock"
-SERVER_PID="/tmp/ptt_stt_server.pid"
-TARGET_STATE="/tmp/ptt_stt_target.env"
+RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
+WAV="${WAV:-/tmp/hermeskey_audio.wav}"
+STATE="${STATE:-$RUNTIME_DIR/hermeskey_recording.pid}"
+OVERLAY_STATE="${OVERLAY_STATE:-$RUNTIME_DIR/hermeskey_overlay.pid}"
+SOCK="${SOCK:-$RUNTIME_DIR/hermeskey.sock}"
+SERVER_PID="${SERVER_PID:-$RUNTIME_DIR/hermeskey_server.pid}"
+TARGET_STATE="${TARGET_STATE:-$RUNTIME_DIR/hermeskey_target.env}"
 
 RECORD_SOURCE="${RECORD_SOURCE:-alsa_input.usb-Beyerdynamic_FOX_5.00-00.mono-fallback}"
 CLIP_CMD="${CLIP_CMD:-wl-copy}"
@@ -36,9 +49,9 @@ PYTHON_STT="$PYTHON_STT_DEFAULT"
 SERVER_SCRIPT="$SERVER_SCRIPT_DEFAULT"
 OVERLAY_SCRIPT="$OVERLAY_SCRIPT_DEFAULT"
 
-LOG="/tmp/ptt_stt_debug.log"
-SERVER_LOG="/tmp/ptt_stt_server.log"
-OVERLAY_LOG="/tmp/ptt_stt_overlay.log"
+LOG="${LOG:-/tmp/hermeskey.log}"
+SERVER_LOG="${SERVER_LOG:-/tmp/hermeskey-server.log}"
+OVERLAY_LOG="${OVERLAY_LOG:-/tmp/hermeskey-overlay.log}"
 
 touch "$LOG"
 
@@ -363,7 +376,7 @@ insert_text() {
   sleep 0.12
 
   if ! focus_is_safe; then
-    notify-send "HermesKey" "Focus changed. Transcript copied to clipboard only." || true
+    notify-send "$APP_NAME" "Focus changed. Transcript copied to clipboard only." || true
     echo "Copied to clipboard (focus changed)."
     return 0
   fi
@@ -389,22 +402,22 @@ insert_text() {
   case "$rc" in
     4)
       log "ydotool is installed but ydotoold is not running."
-      notify-send "HermesKey" "ydotool is installed, but ydotoold is not running." || true
+      notify-send "$APP_NAME" "ydotool is installed, but ydotoold is not running." || true
       echo "Copied to clipboard (ydotoold not running)."
       ;;
     5|6)
       log "Paste fallback is not available for this backend."
-      notify-send "HermesKey" "Paste fallback unavailable for this typing backend." || true
+      notify-send "$APP_NAME" "Paste fallback unavailable for this typing backend." || true
       echo "Copied to clipboard (paste fallback unavailable)."
       ;;
     2|3)
       log "No supported typing backend found for active app insertion."
-      notify-send "HermesKey" "No typing backend found. Install ydotool, wtype, or xdotool." || true
+      notify-send "$APP_NAME" "No typing backend found. Install ydotool, wtype, or xdotool." || true
       echo "Copied to clipboard (typing backend missing)."
       ;;
     *)
       log "Active app insertion failed with code $rc."
-      notify-send "HermesKey" "Typing failed. Transcript copied to clipboard." || true
+      notify-send "$APP_NAME" "Typing failed. Transcript copied to clipboard." || true
       echo "Copied to clipboard (typing failed)."
       ;;
   esac
@@ -430,7 +443,7 @@ ensure_server() {
   done
 
   log "STT server failed to start"
-  notify-send "HermesKey" "Speech model failed to start" || true
+  notify-send "$APP_NAME" "Speech model failed to start" || true
   return 1
 }
 
@@ -530,7 +543,7 @@ record_stop_and_transcribe() {
     hide_overlay
     log "WAV missing or empty: $WAV"
     echo -n "" | "$CLIP_CMD" || true
-    notify-send "HermesKey" "No audio captured" || true
+    notify-send "$APP_NAME" "No audio captured" || true
     echo "No audio captured."
     return
   fi
@@ -544,7 +557,7 @@ record_stop_and_transcribe() {
   if ! reply="$(request_transcription 2>>"$LOG")"; then
     hide_overlay
     log "Failed talking to STT server"
-    notify-send "HermesKey" "Could not reach speech server" || true
+    notify-send "$APP_NAME" "Could not reach speech server" || true
     echo "Transcription failed."
     return
   fi
@@ -552,7 +565,7 @@ record_stop_and_transcribe() {
   if ! transcription="$(printf '%s' "$reply" | extract_text 2>>"$LOG")"; then
     hide_overlay
     log "STT server returned an error"
-    notify-send "HermesKey" "Speech transcription failed" || true
+    notify-send "$APP_NAME" "Speech transcription failed" || true
     echo "Transcription failed."
     return
   fi

@@ -1,33 +1,74 @@
 # HermesKey
 
-HermesKey is a Linux push-to-talk speech-to-text tool with:
+[![CI](https://img.shields.io/github/actions/workflow/status/graygarbage/HermesKey/ci.yml?branch=main&label=CI)](https://github.com/graygarbage/HermesKey/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-- prewarmed `faster-whisper`
-- toggle start/stop recording with one hotkey
-- desktop overlay for **Recording** and **Transcribing**
-- soft start/stop tones
-- direct typing into the active app
-- paste fallback for terminals
-- `ydotoold` user service for Wayland typing
+**Push-to-talk speech-to-text for Linux Wayland desktops.**
 
-The name comes from **Hermes**, the Greek messenger god.
+HermesKey gives you a single hotkey to start recording, stop recording, transcribe locally with a prewarmed Whisper model, and type the result back into the active app.
 
-## Status
+It was built for the workflow of:
 
-Built and tested on KDE Wayland.
+- hold a thought
+- hit one key
+- speak
+- hit the same key again
+- keep typing without touching the mouse
 
-## Repo layout
+## Why “HermesKey”?
 
-- `bin/ptt_stt_toggle.sh` — main hotkey target
-- `bin/ptt_stt_server.py` — prewarmed whisper server over a Unix socket
-- `bin/ptt_stt_overlay.py` — click-through overlay
-- `systemd/user/ptt-stt.service` — prewarmed server service
-- `systemd/user/ydotoold.service` — user-level ydotool daemon
-- `install.sh` — installs scripts and services into the current user account
+**Hermes** is the messenger god in Greek mythology: fast, direct, and always delivering the message.
 
-## Requirements
+## Features
 
-System packages you will usually want:
+- **One-key toggle** for start/stop recording
+- **Prewarmed `faster-whisper` server** for lower latency
+- **On-screen overlay** for `Recording` and `Transcribing`
+- **Soft audio cues** instead of harsh system beeps
+- **Direct typing into the active app**
+- **Clipboard backup** for safety
+- **Paste fallback for terminals** and terminal-like apps
+- **Wayland-friendly typing** via a **user-level `ydotoold`** service
+- **Optional focus safety mode** if you want strict target-window matching
+- **Simple config file** under `~/.config/hermeskey/`
+
+## Current target environment
+
+HermesKey is currently tuned for:
+
+- **Linux**
+- **Wayland**
+- **KDE Plasma**
+- **PipeWire / PulseAudio-compatible audio**
+
+It may also work on other environments, but KDE Wayland is the primary tested target right now.
+
+## Architecture
+
+HermesKey is split into three parts:
+
+1. `bin/hermeskey`  
+   Main toggle script. Starts/stops recording, talks to the STT server, manages overlay, typing, tones, and clipboard fallback.
+
+2. `bin/hermeskey-server.py`  
+   Long-lived local `faster-whisper` server over a Unix domain socket.
+
+3. `bin/hermeskey-overlay.py`  
+   Small click-through, non-focusable overlay window for desktop status.
+
+Systemd user services keep the whisper server and `ydotoold` daemon ready.
+
+More detail:
+
+- [docs/INSTALL.md](docs/INSTALL.md)
+- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
+## Quick start
+
+### 1. Install system dependencies
+
+Typical dependencies:
 
 - `ffmpeg`
 - `wl-clipboard`
@@ -35,17 +76,14 @@ System packages you will usually want:
 - `ydotool`
 - `python3`
 - `python3-pip`
-- `qt6` / `PySide6` runtime support
-- `qdbus` on KDE for app detection
-- `paplay` for soft tones
+- `python3-venv`
+- `PySide6` runtime support
+- `qdbus` on KDE
+- `paplay`
 
-Python packages:
+See [docs/INSTALL.md](docs/INSTALL.md) for a more detailed setup guide.
 
-```bash
-pip install -r requirements.txt
-```
-
-A dedicated venv is recommended, for example:
+### 2. Create a Python environment
 
 ```bash
 python3 -m venv ~/venvs/stt
@@ -54,41 +92,56 @@ pip install -U pip
 pip install -r requirements.txt
 ```
 
-## Install
-
-From the repo root:
+### 3. Install HermesKey
 
 ```bash
 chmod +x install.sh
 ./install.sh
 ```
 
-That installs to:
+### 4. Bind your hotkey
 
-- `~/.local/bin/ptt_stt_toggle.sh`
-- `~/.local/bin/ptt_stt_server.py`
-- `~/.local/bin/ptt_stt_overlay.py`
-- `~/.config/systemd/user/ptt-stt.service`
-- `~/.config/systemd/user/ydotoold.service`
-
-Then bind your desktop hotkey to:
+Bind your desktop shortcut to:
 
 ```bash
-~/.local/bin/ptt_stt_toggle.sh
+~/.local/bin/hermeskey
 ```
 
-## Default behavior
+### 5. Speak
 
-- press hotkey once → start recording
-- press hotkey again → stop recording and transcribe
+- press hotkey once → recording starts
+- press hotkey again → recording stops and transcribes
 - transcript is copied to clipboard and typed into the active app
-- terminal-like apps use paste fallback by default
+
+## Installation details
+
+`install.sh` installs:
+
+- `~/.local/bin/hermeskey`
+- `~/.local/bin/hermeskey-server.py`
+- `~/.local/bin/hermeskey-overlay.py`
+- `~/.config/systemd/user/hermeskey.service`
+- `~/.config/systemd/user/hermeskey-ydotoold.service`
+- `~/.config/hermeskey/hermeskey.env`
+- `~/.config/hermeskey/hermeskey.env.example`
+
+It also creates backward-compatible symlinks for the earlier `ptt_stt_*` script names.
 
 ## Configuration
 
-HermesKey is configured through environment variables.
+HermesKey reads config from:
 
-Common ones:
+```bash
+~/.config/hermeskey/hermeskey.env
+```
+
+Example config is shipped at:
+
+```bash
+~/.config/hermeskey/hermeskey.env.example
+```
+
+Common settings:
 
 ```bash
 MODEL=medium
@@ -121,32 +174,103 @@ PASTE_FOR_APPS=$TERMINAL_APPS
 
 ## Services
 
-Restart the prewarmed server:
+Restart the whisper server:
 
 ```bash
-systemctl --user restart ptt-stt.service
+systemctl --user restart hermeskey.service
 ```
 
 Restart the typing daemon:
 
 ```bash
-systemctl --user restart ydotoold.service
+systemctl --user restart hermeskey-ydotoold.service
 ```
 
-Check logs:
+Check service status:
 
 ```bash
-tail -f /tmp/ptt_stt_debug.log
-journalctl --user -u ptt-stt.service -f
-journalctl --user -u ydotoold.service -f
+systemctl --user status hermeskey.service
+systemctl --user status hermeskey-ydotoold.service
 ```
 
-## Notes
+## Logs
 
-- On KDE Wayland, `ydotoold` should run as a **user** service, not the root system service.
-- If typing fails in some apps, clipboard copy remains as backup.
-- If you want stricter window targeting, set `FOCUS_SAFE_MODE=1`.
+```bash
+tail -f /tmp/hermeskey.log
+journalctl --user -u hermeskey.service -f
+journalctl --user -u hermeskey-ydotoold.service -f
+```
+
+## Troubleshooting
+
+### `ydotool` is installed but typing does not work
+
+Make sure the **user** daemon is running:
+
+```bash
+systemctl --user status hermeskey-ydotoold.service
+```
+
+On KDE Wayland, HermesKey expects a user-owned socket under:
+
+```bash
+/run/user/$UID/.ydotool_socket
+```
+
+### The server is not responding
+
+Check:
+
+```bash
+systemctl --user status hermeskey.service
+journalctl --user -u hermeskey.service -n 100 --no-pager
+```
+
+### The overlay is annoying or you want a quieter setup
+
+Disable overlay:
+
+```bash
+OVERLAY_ENABLED=0
+```
+
+Disable sound:
+
+```bash
+SOUND_ENABLED=0
+```
+
+### I want stricter insertion safety
+
+Enable focus-safe mode:
+
+```bash
+FOCUS_SAFE_MODE=1
+```
+
+That makes HermesKey verify the target window before typing.
+
+## Development
+
+Lint and syntax-check locally:
+
+```bash
+bash -n bin/hermeskey install.sh uninstall.sh
+python3 -m py_compile bin/hermeskey-server.py bin/hermeskey-overlay.py
+```
+
+## Roadmap
+
+- packaged releases for common distros
+- per-app config beyond env vars
+- richer overlay styling
+- optional direct GUI settings
+- better compositor detection outside KDE
+
+## Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).

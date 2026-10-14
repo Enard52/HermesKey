@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-and-syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Shell syntax
+        run: bash -n bin/hermeskey install.sh uninstall.sh
+
+      - name: Shellcheck
+        run: shellcheck bin/hermeskey install.sh uninstall.sh
+
+      - name: Python syntax
+        run: python3 -m py_compile bin/hermeskey-server.py bin/hermeskey-overlay.py

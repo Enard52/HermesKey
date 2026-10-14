@@ -1,0 +1,32 @@
+name: Bug report
+description: Report a bug in HermesKey
+labels: [bug]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: Describe the bug clearly.
+    validations:
+      required: true
+  - type: input
+    id: distro
+    attributes:
+      label: Distro
+      placeholder: Fedora / Nobara / Arch / ...
+  - type: input
+    id: desktop
+    attributes:
+      label: Desktop / compositor
+      placeholder: KDE Plasma Wayland / GNOME / ...
+  - type: input
+    id: session
+    attributes:
+      label: Session type
+      placeholder: wayland / x11
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: Include excerpts from /tmp/hermeskey.log or journalctl if possible.
+      render: shell

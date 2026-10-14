@@ -1,8 +1,11 @@
 [Unit]
 Description=HermesKey user ydotool daemon
+After=graphical-session.target
+Wants=graphical-session.target
 
 [Service]
 Type=simple
+EnvironmentFile=-%h/.config/hermeskey/hermeskey.env
 ExecStart=/usr/bin/ydotoold --socket-path=%t/.ydotool_socket
 Restart=on-failure
 RestartSec=1
