@@ -6,6 +6,33 @@ All notable changes to HermesKey will be documented in this file.
 
 - TBD
 
+## [0.5.0] - 2026-10-14
+
+Active window detection, reliability, and faster typing.
+
+### Fixed
+
+- active window detection no longer opens KWin's interactive window picker (crosshair cursor) with `FOCUS_SAFE_MODE=1` (#28)
+- the terminal paste fallback (`PASTE_FOR_APPS`) now works; before, it never triggered (#28)
+- pressing the hotkey while the model is loading no longer starts a duplicate speech server (#27)
+- upgrades restart the services so new code takes effect immediately (#29)
+- `STT_LANG=` (empty) now enables language auto-detection as documented (#30)
+- the clipboard is no longer wiped when nothing was captured; `COPY_TO_CLIPBOARD=0` is respected (#31)
+- a custom venv location (`HERMESKEY_VENV`) is used by the service, doctor, and hotkey script (#32)
+- Fedora/Nobara install instructions list `python3-pyside6` (the overlay needs PySide6, not PyQt6) (#33)
+
+### Added
+
+- `TYPE_KEY_DELAY` / `TYPE_KEY_HOLD` settings; typing is about 4x faster by default (#34)
+- active window detection via `kdotool`, or a built-in KWin script when `kdotool` is not installed (#28)
+- doctor checks for the venv's faster-whisper, the overlay's PySide6, the configured microphone, and the active window detection method
+
+### Changed
+
+- default `RECORD_SOURCE` is `default` instead of a specific USB microphone (#36)
+- `PySide6` removed from `requirements.txt` (the overlay uses the system Python) (#33)
+- `scripts/check.sh` checks every shell script; CI and `make check` use it (#35)
+
 ## [0.4.2] - 2026-10-14
 
 Bug-fix and privacy release.
