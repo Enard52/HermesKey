@@ -77,8 +77,11 @@ fi
 rm -f /tmp/hermeskey_audio.wav /tmp/hermeskey.log /tmp/hermeskey-server.log /tmp/hermeskey-overlay.log 2>/dev/null || true
 
 systemctl --user daemon-reload
-systemctl --user enable --now hermeskey-ydotoold.service
-systemctl --user enable --now hermeskey.service
+systemctl --user enable hermeskey-ydotoold.service hermeskey.service
+# restart (not just start): on upgrades the old server code would otherwise
+# keep running until the next login.
+systemctl --user restart hermeskey-ydotoold.service
+systemctl --user restart hermeskey.service
 
 echo
 printf 'HermesKey %s installed.\n\n' "$VERSION"
