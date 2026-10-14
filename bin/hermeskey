@@ -53,6 +53,12 @@ TONE_VOLUME="${TONE_VOLUME:-0.20}"
 TERMINAL_APPS="${TERMINAL_APPS:-org.wezfurlong.wezterm,org.kde.konsole,kitty,Alacritty,ghostty,foot,gnome-terminal,tilix,xfce4-terminal}"
 PASTE_FOR_APPS="${PASTE_FOR_APPS:-$TERMINAL_APPS}"
 PASTE_SHORTCUT="${PASTE_SHORTCUT:-auto}"
+# Typing speed (ms). ydotool's own default hold is 20 ms per key, which
+# made a 166-character dictation take ~4 s. Raise these if an app drops keys.
+TYPE_KEY_DELAY="${TYPE_KEY_DELAY:-1}"
+TYPE_KEY_HOLD="${TYPE_KEY_HOLD:-5}"
+[[ "$TYPE_KEY_DELAY" =~ ^[0-9]+$ ]] || TYPE_KEY_DELAY=1
+[[ "$TYPE_KEY_HOLD" =~ ^[0-9]+$ ]] || TYPE_KEY_HOLD=5
 PYTHON_STT="$PYTHON_STT_DEFAULT"
 SERVER_SCRIPT="$SERVER_SCRIPT_DEFAULT"
 OVERLAY_SCRIPT="$OVERLAY_SCRIPT_DEFAULT"
@@ -454,13 +460,18 @@ type_text() {
         log "ydotool selected but socket missing: $ysock"
         return 4
       fi
-      YDOTOOL_SOCKET="$ysock" "$ydotool_bin" type --key-delay 1 -- "$text"
+      local timing=(--key-delay "$TYPE_KEY_DELAY")
+      # --key-hold exists in ydotool >= 1.0 only (Debian/Ubuntu ship 0.1.x).
+      if "$ydotool_bin" type --help 2>&1 | grep -q -- '--key-hold'; then
+        timing+=(--key-hold "$TYPE_KEY_HOLD")
+      fi
+      YDOTOOL_SOCKET="$ysock" "$ydotool_bin" type "${timing[@]}" -- "$text"
       ;;
     wtype)
       "$wtype_bin" "$text"
       ;;
     xdotool)
-      "$xdotool_bin" type --clearmodifiers --delay 1 -- "$text"
+      "$xdotool_bin" type --clearmodifiers --delay "$TYPE_KEY_DELAY" -- "$text"
       ;;
     none)
       return 2

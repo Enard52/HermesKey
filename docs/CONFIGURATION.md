@@ -33,6 +33,15 @@ TYPE_BACKEND=auto
 - `COPY_TO_CLIPBOARD=1` keeps a backup copy even when typing succeeds
 - `TYPE_BACKEND` may be `auto`, `ydotool`, `wtype`, or `xdotool`
 
+```bash
+TYPE_KEY_DELAY=1
+TYPE_KEY_HOLD=5
+```
+
+- typing speed in milliseconds: delay between keys, and how long each key is held
+- ydotool's own default hold is 20 ms per key, so long dictations typed slowly; raise these if an app drops characters
+- `TYPE_KEY_HOLD` is only passed to ydotool 1.0 and newer
+
 ## Overlay and sound
 
 ```bash
