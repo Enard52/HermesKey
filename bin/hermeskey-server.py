@@ -76,7 +76,14 @@ class Server:
         self.cleanup()
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self._sock = sock
-        sock.bind(self.socket_path)
+        # Create the socket file with owner-only permissions from the start.
+        # Calling chmod() after bind() leaves a window where another local user
+        # could connect (relevant when falling back to a shared dir like /tmp).
+        old_umask = os.umask(0o177)
+        try:
+            sock.bind(self.socket_path)
+        finally:
+            os.umask(old_umask)
         os.chmod(self.socket_path, 0o600)
         sock.listen(5)
         log(f"listening on {self.socket_path}")
