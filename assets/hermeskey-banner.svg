@@ -1,0 +1,49 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="82" y1="48" x2="1143" y2="577" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#020617"/>
+      <stop offset="0.5" stop-color="#111827"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="315" y1="179" x2="693" y2="502" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#EF4444"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#1E293B"/>
+      <stop offset="1" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1280" height="640" rx="36" fill="url(#bg)"/>
+  <circle cx="1033" cy="149" r="171" fill="#F59E0B" opacity="0.08"/>
+  <circle cx="1147" cy="487" r="196" fill="#EF4444" opacity="0.08"/>
+  <g opacity="0.95">
+    <rect x="93" y="80" width="120" height="120" rx="30" fill="#111827" stroke="#334155"/>
+    <path d="M125 145C145 108 177 88 221 86C212 104 210 122 216 139C230 133 244 132 259 136C248 146 242 160 240 176C225 170 212 172 200 181C190 189 184 201 181 216C169 194 151 170 125 145Z" fill="#F8FAFC"/>
+    <path d="M143 109C159 96 177 90 198 92C188 103 184 114 186 125C193 124 200 125 207 129C195 136 186 147 180 160C174 150 163 142 148 135C152 125 150 117 143 109Z" fill="url(#accent)"/>
+    <rect x="205" y="83" width="24" height="76" rx="12" transform="rotate(18 205 83)" fill="#E2E8F0"/>
+  </g>
+  <text x="265" y="148" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="76" font-weight="800">HermesKey</text>
+  <text x="268" y="199" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="28" font-weight="500">Push-to-talk speech-to-text for Linux Wayland desktops.</text>
+  <text x="94" y="296" fill="#E2E8F0" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="24" font-weight="600">One hotkey. Local transcription. Direct typing. No mouse required.</text>
+
+  <g>
+    <rect x="94" y="343" width="502" height="184" rx="28" fill="#0B1220" stroke="#334155"/>
+    <rect x="127" y="378" width="138" height="44" rx="22" fill="url(#chip)" stroke="#475569"/>
+    <circle cx="152" cy="400" r="9" fill="#EF4444"/>
+    <text x="174" y="408" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Recording</text>
+    <text x="128" y="463" fill="#CBD5E1" font-family="JetBrains Mono, Consolas, monospace" font-size="22">Press hotkey → speak → press again</text>
+    <text x="128" y="499" fill="#64748B" font-family="JetBrains Mono, Consolas, monospace" font-size="18">prewarmed faster-whisper • ydotool typing • soft cues</text>
+  </g>
+
+  <g>
+    <rect x="658" y="200" width="518" height="286" rx="28" fill="#0B1220" stroke="#334155"/>
+    <rect x="694" y="233" width="166" height="44" rx="22" fill="url(#chip)" stroke="#475569"/>
+    <circle cx="720" cy="255" r="9" fill="#F59E0B"/>
+    <text x="742" y="263" fill="#F8FAFC" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="20" font-weight="700">Transcribing</text>
+    <text x="695" y="332" fill="#E2E8F0" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="26" font-weight="700">“The message lands exactly where I’m working.”</text>
+    <text x="695" y="380" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22">• prewarmed Unix-socket STT server</text>
+    <text x="695" y="416" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22">• click-through, non-focusable overlay</text>
+    <text x="695" y="452" fill="#94A3B8" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="22">• paste fallback for terminal workflows</text>
+  </g>
+</svg>

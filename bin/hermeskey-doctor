@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ok() { printf '✅ %s\n' "$*"; }
+warn() { printf '⚠️  %s\n' "$*"; }
+fail() { printf '❌ %s\n' "$*"; }
+section() { printf '\n%s\n' "== $* =="; }
+check_cmd() {
+  local cmd="$1"
+  if command -v "$cmd" >/dev/null 2>&1; then
+    ok "$cmd found: $(command -v "$cmd")"
+  else
+    fail "$cmd not found"
+  fi
+}
+
+section 'Environment'
+printf 'XDG_SESSION_TYPE=%s\n' "${XDG_SESSION_TYPE:-}"
+printf 'XDG_CURRENT_DESKTOP=%s\n' "${XDG_CURRENT_DESKTOP:-}"
+printf 'XDG_RUNTIME_DIR=%s\n' "${XDG_RUNTIME_DIR:-}"
+
+section 'Core commands'
+for cmd in ffmpeg python3 wl-copy notify-send ydotool ydotoold pactl paplay; do
+  check_cmd "$cmd"
+done
+
+section 'Python venv'
+if [[ -x "$HOME/venvs/stt/bin/python" ]]; then
+  ok "venv python found: $HOME/venvs/stt/bin/python"
+else
+  warn "venv python missing: $HOME/venvs/stt/bin/python"
+fi
+
+section 'Services'
+if systemctl --user is-active --quiet hermeskey.service; then
+  ok 'hermeskey.service is active'
+else
+  warn 'hermeskey.service is not active'
+fi
+
+if systemctl --user is-active --quiet hermeskey-ydotoold.service; then
+  ok 'hermeskey-ydotoold.service is active'
+else
+  warn 'hermeskey-ydotoold.service is not active'
+fi
+
+section 'Sockets'
+if [[ -S "${XDG_RUNTIME_DIR:-/run/user/$UID}/hermeskey.sock" ]]; then
+  ok "HermesKey socket present: ${XDG_RUNTIME_DIR:-/run/user/$UID}/hermeskey.sock"
+else
+  warn "HermesKey socket missing: ${XDG_RUNTIME_DIR:-/run/user/$UID}/hermeskey.sock"
+fi
+
+if [[ -S "/run/user/$UID/.ydotool_socket" ]]; then
+  ok "ydotool socket present: /run/user/$UID/.ydotool_socket"
+else
+  warn 'ydotool socket missing: /run/user/'"$UID"'/.ydotool_socket'
+fi
+
+section 'Audio sources'
+if command -v pactl >/dev/null 2>&1; then
+  pactl list short sources || true
+fi
+
+section 'Service snippets'
+systemctl --user --no-pager --full status hermeskey.service 2>/dev/null | sed -n '1,20p' || true
+systemctl --user --no-pager --full status hermeskey-ydotoold.service 2>/dev/null | sed -n '1,20p' || true
+
+section 'Result'
+ok 'Doctor run complete.'
+printf 'If dictation still fails, include this output plus /tmp/hermeskey.log in your issue.\n'

@@ -57,3 +57,9 @@ Set your desktop shortcut target to:
 systemctl --user status hermeskey.service
 systemctl --user status hermeskey-ydotoold.service
 ```
+
+## Run the doctor
+
+```bash
+hermeskey-doctor
+```

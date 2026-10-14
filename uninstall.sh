@@ -11,6 +11,7 @@ rm -f \
   "$BIN_DEST/hermeskey" \
   "$BIN_DEST/hermeskey-server.py" \
   "$BIN_DEST/hermeskey-overlay.py" \
+  "$BIN_DEST/hermeskey-doctor" \
   "$BIN_DEST/ptt_stt_toggle.sh" \
   "$BIN_DEST/ptt_stt_server.py" \
   "$BIN_DEST/ptt_stt_overlay.py" \

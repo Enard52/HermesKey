@@ -1,74 +1,89 @@
 # HermesKey
 
-[![CI](https://img.shields.io/github/actions/workflow/status/graygarbage/HermesKey/ci.yml?branch=main&label=CI)](https://github.com/graygarbage/HermesKey/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+<p align="center">
+  <img src="assets/hermeskey-banner.svg" alt="HermesKey banner" width="100%" />
+</p>
 
-**Push-to-talk speech-to-text for Linux Wayland desktops.**
+<p align="center">
+  <a href="https://github.com/graygarbage/HermesKey/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/graygarbage/HermesKey/ci.yml?branch=main&label=CI"></a>
+  <a href="https://github.com/graygarbage/HermesKey/releases"><img alt="Release" src="https://img.shields.io/github/v/release/graygarbage/HermesKey?display_name=tag"></a>
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/License-MIT-blue.svg"></a>
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Linux%20Wayland-0f172a">
+  <img alt="Desktop" src="https://img.shields.io/badge/tuned%20for-KDE%20Plasma-1d4ed8">
+</p>
 
-HermesKey gives you a single hotkey to start recording, stop recording, transcribe locally with a prewarmed Whisper model, and type the result back into the active app.
+**HermesKey** is a **push-to-talk speech-to-text weapon** for Linux Wayland desktops.
 
-It was built for the workflow of:
+You press one hotkey, speak, press it again, and your words land back in the active app with almost no ceremony:
 
-- hold a thought
-- hit one key
-- speak
-- hit the same key again
-- keep typing without touching the mouse
+- no cloud account
+- no subscription nonsense
+- no giant Electron slab
+- no mouse required
+- no repeated model warm-up penalty
+
+It is local-first, fast, and built for people who want voice dictation to feel like a native part of their desktop instead of a science project.
+
+---
+
+## Why it rules
+
+- **One-key toggle** for start/stop recording
+- **Prewarmed `faster-whisper` server** for low-latency transcription
+- **Direct typing into the active app**
+- **Clipboard backup** so your words are never stranded
+- **Paste fallback for terminals** and terminal-like apps
+- **Click-through overlay** for clean `Recording` / `Transcribing` status
+- **Soft audio cues** instead of painful beeps
+- **Wayland-friendly typing** via a **user-owned `ydotoold` service**
+- **Built-in doctor command** for fast troubleshooting
+- **Config file, systemd services, docs, CI, release packaging**
+
+---
+
+## The workflow
+
+<p align="center">
+  <img src="assets/workflow.svg" alt="HermesKey workflow" width="100%" />
+</p>
+
+HermesKey was built for this exact loop:
+
+1. hit your hotkey
+2. talk
+3. hit the same hotkey again
+4. keep moving
+
+No modal UI. No giant dashboard. No focus theft.
+
+---
 
 ## Why “HermesKey”?
 
-**Hermes** is the messenger god in Greek mythology: fast, direct, and always delivering the message.
+**Hermes** is the messenger god in Greek mythology: fast, precise, always carrying the message.
 
-## Features
+That is exactly what this tool should feel like.
 
-- **One-key toggle** for start/stop recording
-- **Prewarmed `faster-whisper` server** for lower latency
-- **On-screen overlay** for `Recording` and `Transcribing`
-- **Soft audio cues** instead of harsh system beeps
-- **Direct typing into the active app**
-- **Clipboard backup** for safety
-- **Paste fallback for terminals** and terminal-like apps
-- **Wayland-friendly typing** via a **user-level `ydotoold`** service
-- **Optional focus safety mode** if you want strict target-window matching
-- **Simple config file** under `~/.config/hermeskey/`
+---
 
 ## Current target environment
 
-HermesKey is currently tuned for:
+HermesKey is currently tuned and tested primarily for:
 
 - **Linux**
 - **Wayland**
 - **KDE Plasma**
 - **PipeWire / PulseAudio-compatible audio**
 
-It may also work on other environments, but KDE Wayland is the primary tested target right now.
+It may work elsewhere, but KDE Wayland is the first-class target for now.
 
-## Architecture
-
-HermesKey is split into three parts:
-
-1. `bin/hermeskey`  
-   Main toggle script. Starts/stops recording, talks to the STT server, manages overlay, typing, tones, and clipboard fallback.
-
-2. `bin/hermeskey-server.py`  
-   Long-lived local `faster-whisper` server over a Unix domain socket.
-
-3. `bin/hermeskey-overlay.py`  
-   Small click-through, non-focusable overlay window for desktop status.
-
-Systemd user services keep the whisper server and `ydotoold` daemon ready.
-
-More detail:
-
-- [docs/INSTALL.md](docs/INSTALL.md)
-- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+---
 
 ## Quick start
 
 ### 1. Install system dependencies
 
-Typical dependencies:
+Typical requirements:
 
 - `ffmpeg`
 - `wl-clipboard`
@@ -81,9 +96,9 @@ Typical dependencies:
 - `qdbus` on KDE
 - `paplay`
 
-See [docs/INSTALL.md](docs/INSTALL.md) for a more detailed setup guide.
+Detailed distro guidance lives in [docs/INSTALL.md](docs/INSTALL.md).
 
-### 2. Create a Python environment
+### 2. Create the Python environment
 
 ```bash
 python3 -m venv ~/venvs/stt
@@ -99,33 +114,75 @@ chmod +x install.sh
 ./install.sh
 ```
 
-### 4. Bind your hotkey
+### 4. Bind your desktop hotkey
 
-Bind your desktop shortcut to:
+Point your desktop shortcut at:
 
 ```bash
 ~/.local/bin/hermeskey
 ```
 
-### 5. Speak
+### 5. Dictate
 
-- press hotkey once → recording starts
-- press hotkey again → recording stops and transcribes
-- transcript is copied to clipboard and typed into the active app
+- press once → recording starts
+- press again → recording stops and transcribes
+- HermesKey copies to clipboard and types into the active app
 
-## Installation details
+---
+
+## Architecture
+
+HermesKey is intentionally small and understandable.
+
+### `bin/hermeskey`
+Main hotkey entrypoint.
+
+Responsibilities:
+- audio capture
+- overlay control
+- soft tones
+- server communication
+- clipboard backup
+- typing / paste fallback
+
+### `bin/hermeskey-server.py`
+Long-lived local transcription server over a Unix domain socket.
+
+This is the piece that keeps Whisper **warm** so you do not pay startup cost every time you speak.
+
+### `bin/hermeskey-overlay.py`
+Minimal overlay process.
+
+It is designed to be:
+- non-focusable
+- click-through
+- visually clear
+
+More technical detail:
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md)
+- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
+- [docs/FAQ.md](docs/FAQ.md)
+
+---
+
+## Installation layout
 
 `install.sh` installs:
 
 - `~/.local/bin/hermeskey`
 - `~/.local/bin/hermeskey-server.py`
 - `~/.local/bin/hermeskey-overlay.py`
+- `~/.local/bin/hermeskey-doctor`
 - `~/.config/systemd/user/hermeskey.service`
 - `~/.config/systemd/user/hermeskey-ydotoold.service`
 - `~/.config/hermeskey/hermeskey.env`
 - `~/.config/hermeskey/hermeskey.env.example`
 
-It also creates backward-compatible symlinks for the earlier `ptt_stt_*` script names.
+It also creates compatibility symlinks for the earlier `ptt_stt_*` names.
+
+---
 
 ## Configuration
 
@@ -135,13 +192,7 @@ HermesKey reads config from:
 ~/.config/hermeskey/hermeskey.env
 ```
 
-Example config is shipped at:
-
-```bash
-~/.config/hermeskey/hermeskey.env.example
-```
-
-Common settings:
+Example:
 
 ```bash
 MODEL=medium
@@ -163,7 +214,7 @@ TONE_DURATION=0.035
 TONE_VOLUME=0.20
 ```
 
-Typing/paste behavior:
+Typing / paste behavior:
 
 ```bash
 TYPE_BACKEND=auto
@@ -172,9 +223,14 @@ TERMINAL_APPS=org.wezfurlong.wezterm,org.kde.konsole,kitty,Alacritty,ghostty,foo
 PASTE_FOR_APPS=$TERMINAL_APPS
 ```
 
+More detail:
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md)
+
+---
+
 ## Services
 
-Restart the whisper server:
+Restart the transcription server:
 
 ```bash
 systemctl --user restart hermeskey.service
@@ -186,12 +242,26 @@ Restart the typing daemon:
 systemctl --user restart hermeskey-ydotoold.service
 ```
 
-Check service status:
+Check status:
 
 ```bash
 systemctl --user status hermeskey.service
 systemctl --user status hermeskey-ydotoold.service
 ```
+
+---
+
+## Doctor mode
+
+Run a quick environment and service audit:
+
+```bash
+hermeskey-doctor
+```
+
+This checks core commands, services, sockets, and audio sources.
+
+---
 
 ## Logs
 
@@ -201,75 +271,53 @@ journalctl --user -u hermeskey.service -f
 journalctl --user -u hermeskey-ydotoold.service -f
 ```
 
-## Troubleshooting
-
-### `ydotool` is installed but typing does not work
-
-Make sure the **user** daemon is running:
-
-```bash
-systemctl --user status hermeskey-ydotoold.service
-```
-
-On KDE Wayland, HermesKey expects a user-owned socket under:
-
-```bash
-/run/user/$UID/.ydotool_socket
-```
-
-### The server is not responding
-
-Check:
-
-```bash
-systemctl --user status hermeskey.service
-journalctl --user -u hermeskey.service -n 100 --no-pager
-```
-
-### The overlay is annoying or you want a quieter setup
-
-Disable overlay:
-
-```bash
-OVERLAY_ENABLED=0
-```
-
-Disable sound:
-
-```bash
-SOUND_ENABLED=0
-```
-
-### I want stricter insertion safety
-
-Enable focus-safe mode:
-
-```bash
-FOCUS_SAFE_MODE=1
-```
-
-That makes HermesKey verify the target window before typing.
+---
 
 ## Development
 
-Lint and syntax-check locally:
+Run local checks:
+
+```bash
+make check
+```
+
+Or manually:
 
 ```bash
 bash -n bin/hermeskey install.sh uninstall.sh
 python3 -m py_compile bin/hermeskey-server.py bin/hermeskey-overlay.py
 ```
 
+Build a release tarball:
+
+```bash
+make package
+```
+
+---
+
 ## Roadmap
 
+- richer per-app configuration
 - packaged releases for common distros
-- per-app config beyond env vars
-- richer overlay styling
-- optional direct GUI settings
-- better compositor detection outside KDE
+- improved compositor detection outside KDE
+- optional GUI configuration surface
+- prettier branding and demo media
+
+---
 
 ## Contributing
 
-Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md).
+PRs, bug reports, and focused improvements are welcome.
+
+Read:
+
+- [CONTRIBUTING.md](CONTRIBUTING.md)
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
+- [SECURITY.md](SECURITY.md)
+- [SUPPORT.md](SUPPORT.md)
+
+---
 
 ## License
 

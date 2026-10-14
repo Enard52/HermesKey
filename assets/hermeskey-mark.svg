@@ -1,0 +1,29 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="64" y1="48" x2="456" y2="448" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#111827"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="wing" x1="118" y1="106" x2="408" y2="380" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F8FAFC"/>
+      <stop offset="1" stop-color="#CBD5E1"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="180" y1="122" x2="332" y2="365" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F59E0B"/>
+      <stop offset="1" stop-color="#EF4444"/>
+    </linearGradient>
+    <filter id="glow" x="42" y="42" width="428" height="428" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  <rect x="32" y="32" width="448" height="448" rx="120" fill="url(#bg)"/>
+  <g filter="url(#glow)">
+    <path d="M141 287C167 199 226 146 318 127C296 164 291 198 302 230C332 216 363 213 395 220C371 242 358 271 355 307C323 294 295 298 270 319C250 336 238 360 233 391C209 344 178 310 141 287Z" fill="url(#wing)" opacity="0.96"/>
+    <path d="M180 198C214 170 253 157 298 160C276 184 267 207 270 230C286 227 301 229 316 236C290 252 271 274 258 302C245 281 222 264 190 249C199 228 195 211 180 198Z" fill="url(#accent)"/>
+    <path d="M125 253L175 220L177 280L125 253Z" fill="#E2E8F0" opacity="0.95"/>
+    <path d="M173 212L219 181L223 236L173 212Z" fill="#F8FAFC" opacity="0.95"/>
+    <rect x="311" y="114" width="58" height="190" rx="29" transform="rotate(19 311 114)" fill="#E2E8F0"/>
+    <rect x="328" y="146" width="22" height="126" rx="11" transform="rotate(19 328 146)" fill="#0F172A" opacity="0.75"/>
+  </g>
+</svg>
