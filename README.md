@@ -1,6 +1,6 @@
-# HermesKey
-
-<p align="center"><strong>Push-to-talk speech-to-text for Linux Wayland desktops.</strong></p>
+<p align="center">
+  <img src="assets/hermeskey-banner.svg" alt="HermesKey: push-to-talk speech-to-text for Linux Wayland desktops" width="100%">
+</p>
 
 <p align="center">
   <a href="https://github.com/graygarbage/HermesKey/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/graygarbage/HermesKey/actions/workflows/ci.yml/badge.svg?branch=main"></a>
