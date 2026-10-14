@@ -12,11 +12,13 @@ HermesKey already has the core hotkey dictation loop:
 - desktop helper tools
 - bootstrap install flow
 
+The 0.5.x releases focused on correctness and reliability (active window detection, paste fallback, clipboard, server startup) plus the app icon.
+
 The next work should focus on usability, correctness, and distribution.
 
 ## Phase 1 — Settings GUI
 
-Target milestone: **v0.5.0 — Settings GUI**
+Target milestone: **v0.6.0 — Settings GUI**
 
 Goal: make setup and day-to-day configuration much easier without turning HermesKey into a giant app.
 
@@ -31,7 +33,7 @@ Planned areas:
 
 ## Phase 2 — Lexicon / Corrections
 
-Target milestone: **v0.6.0 — Lexicon / Corrections**
+Target milestone: **v0.7.0 — Lexicon / Corrections**
 
 Goal: improve real-world transcription quality for names, jargon, and project-specific terms.
 
@@ -45,7 +47,7 @@ Planned areas:
 
 ## Phase 3 — Packaging
 
-Target milestone: **v0.7.0 — Packaging**
+Target milestone: **v0.8.0 — Packaging**
 
 Goal: make HermesKey feel native on Linux distributions.
 
@@ -59,7 +61,7 @@ Planned areas:
 
 ## Phase 4 — UX polish
 
-Target milestone: **v0.8.0 — UX Polish**
+Target milestone: **v0.9.0 — UX Polish**
 
 Goal: reduce friction and make HermesKey easier to trust.
 
