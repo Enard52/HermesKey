@@ -345,12 +345,14 @@ detect_type_backend() {
   echo none
 }
 
+COPIED=0
+
 copy_text() {
   local text="$1"
-  if [[ "$COPY_TO_CLIPBOARD" == "1" ]]; then
-    echo -n "$text" | "$CLIP_CMD"
-    log "Copied transcription to clipboard (${#text} chars)."
-  fi
+  [[ "$COPIED" == "1" ]] && return 0
+  printf '%s' "$text" | "$CLIP_CMD"
+  COPIED=1
+  log "Copied transcription to clipboard (${#text} chars)."
 }
 
 resolve_ydotool_socket() {
@@ -457,7 +459,12 @@ insert_text() {
   local text="$1"
   local rc=0
 
-  copy_text "$text"
+  # COPY_TO_CLIPBOARD=1 keeps a backup copy even when typing succeeds.
+  # With 0, the clipboard is only used when it is the only way to deliver
+  # the text (clipboard mode, focus changed, typing failed).
+  if [[ "$COPY_TO_CLIPBOARD" == "1" || "$INSERT_MODE" != "type" ]]; then
+    copy_text "$text"
+  fi
 
   if [[ "$INSERT_MODE" != "type" ]]; then
     echo "Copied to clipboard."
@@ -467,6 +474,7 @@ insert_text() {
   sleep 0.12
 
   if ! focus_is_safe; then
+    copy_text "$text"
     notify-send "$APP_NAME" "Focus changed. Transcript copied to clipboard only." || true
     echo "Copied to clipboard (focus changed)."
     return 0
@@ -476,7 +484,9 @@ insert_text() {
 
   # Capture the backend's exit code directly; `rc=$?` after an if/fi block
   # would always read 0 and hide the real failure reason.
-  if app_matches_patterns "$PASTE_FOR_APPS" "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION"; then
+  # Pasting needs the transcript on the clipboard; with COPY_TO_CLIPBOARD=0
+  # type instead of pasting whatever else happens to be there.
+  if [[ "$COPY_TO_CLIPBOARD" == "1" ]] && app_matches_patterns "$PASTE_FOR_APPS" "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION"; then
     paste_text "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION" || rc=$?
     if (( rc == 0 )); then
       log "Pasted transcription into active app (${#text} chars)."
@@ -491,6 +501,9 @@ insert_text() {
       return 0
     fi
   fi
+
+  # Insertion failed: make sure the transcript is not lost.
+  copy_text "$text"
 
   case "$rc" in
     4)
@@ -679,7 +692,6 @@ record_stop_and_transcribe() {
   if [[ ! -s "$WAV" ]]; then
     hide_overlay
     log "WAV missing or empty: $WAV"
-    echo -n "" | "$CLIP_CMD" || true
     notify-send "$APP_NAME" "No audio captured" || true
     echo "No audio captured."
     return
@@ -714,7 +726,6 @@ record_stop_and_transcribe() {
 
   if [[ -z "$transcription" ]]; then
     log "No transcription text produced."
-    echo -n "" | "$CLIP_CMD" || true
     echo "No transcription."
     return
   fi
