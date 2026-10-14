@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+LOG_FILE="${LOG:-${XDG_STATE_HOME:-$HOME/.local/state}/hermeskey/hermeskey.log}"
 TMP_FILE="$(mktemp)"
 trap 'rm -f "$TMP_FILE"' EXIT
 
 {
   printf '== HermesKey runtime log ==\n\n'
-  tail -n 120 /tmp/hermeskey.log 2>/dev/null || printf 'No runtime log found.\n'
+  tail -n 120 "$LOG_FILE" 2>/dev/null || printf 'No runtime log found.\n'
   printf '\n== hermeskey.service ==\n\n'
   journalctl --user -u hermeskey.service -n 80 --no-pager 2>/dev/null || printf 'No service log available.\n'
   printf '\n== hermeskey-ydotoold.service ==\n\n'

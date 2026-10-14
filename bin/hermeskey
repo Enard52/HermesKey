@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Recordings, logs, and state files are private to the user.
+umask 077
+
 APP_NAME="HermesKey"
 APP_ID="hermeskey"
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/$APP_ID"
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/$APP_ID"
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/$APP_ID"
 CONFIG_FILE="${HERMESKEY_CONFIG:-$CONFIG_DIR/hermeskey.env}"
 VERSION_FILE="${HERMESKEY_VERSION_FILE:-$DATA_DIR/VERSION}"
 
@@ -24,7 +28,8 @@ MODEL="${MODEL:-medium}"
 STT_LANG="${STT_LANG:-en}"
 
 RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
-WAV="${WAV:-/tmp/hermeskey_audio.wav}"
+WAV="${WAV:-$RUNTIME_DIR/hermeskey_audio.wav}"
+KEEP_AUDIO="${KEEP_AUDIO:-0}"
 STATE="${STATE:-$RUNTIME_DIR/hermeskey_recording.pid}"
 OVERLAY_STATE="${OVERLAY_STATE:-$RUNTIME_DIR/hermeskey_overlay.pid}"
 SOCK="${SOCK:-$RUNTIME_DIR/hermeskey.sock}"
@@ -51,9 +56,9 @@ PYTHON_STT="$PYTHON_STT_DEFAULT"
 SERVER_SCRIPT="$SERVER_SCRIPT_DEFAULT"
 OVERLAY_SCRIPT="$OVERLAY_SCRIPT_DEFAULT"
 
-LOG="${LOG:-/tmp/hermeskey.log}"
-SERVER_LOG="${SERVER_LOG:-/tmp/hermeskey-server.log}"
-OVERLAY_LOG="${OVERLAY_LOG:-/tmp/hermeskey-overlay.log}"
+LOG="${LOG:-$STATE_DIR/hermeskey.log}"
+SERVER_LOG="${SERVER_LOG:-$STATE_DIR/hermeskey-server.log}"
+OVERLAY_LOG="${OVERLAY_LOG:-$STATE_DIR/hermeskey-overlay.log}"
 VERSION="${HERMESKEY_VERSION:-}"
 if [[ -z "$VERSION" && -r "$VERSION_FILE" ]]; then
   VERSION="$(tr -d '[:space:]' < "$VERSION_FILE")"
@@ -63,6 +68,7 @@ if [[ -z "$VERSION" && -r "$SCRIPT_DIR/../VERSION" ]]; then
 fi
 [[ -n "$VERSION" ]] || VERSION="dev"
 
+mkdir -p "$(dirname -- "$LOG")" "$(dirname -- "$SERVER_LOG")" "$(dirname -- "$OVERLAY_LOG")"
 touch "$LOG"
 
 log() { echo "[$(date '+%F %T')] $*" | tee -a "$LOG"; }
@@ -165,14 +171,13 @@ query_active_app() {
   local prefix="${1:-APP_}"
   local window_info
   if ! command -v qdbus >/dev/null 2>&1; then
-    printf "%sUUID=''\n%sDESKTOP_FILE=''\n%sRESOURCE_CLASS=''\n%sCAPTION=''\n%sPID=''\n" \
+    printf '%sUUID=\n%sDESKTOP_FILE=\n%sRESOURCE_CLASS=\n%sCAPTION=\n%sPID=\n' \
       "$prefix" "$prefix" "$prefix" "$prefix" "$prefix"
     return 0
   fi
 
   window_info="$(qdbus org.kde.KWin /KWin org.kde.KWin.queryWindowInfo 2>/dev/null || true)"
   printf '%s\n' "$window_info" | python3 -c '
-import shlex
 import sys
 
 prefix = sys.argv[1]
@@ -193,14 +198,32 @@ mapping = {
     "pid": "PID",
 }
 for src, dest in mapping.items():
-    print(f"{prefix}{dest}={shlex.quote(data.get(src, ""))}")
+    # Raw KEY=value lines; parsed by read_app_vars, never eval/sourced.
+    value = data.get(src, "").replace("\r", " ").replace("\n", " ")
+    print(f"{prefix}{dest}={value}")
 ' "$prefix"
+}
+
+# Read KEY=value lines (from query_active_app) on stdin and assign only the
+# known window-info variables for the given prefix. Values are treated as
+# plain data, so window captions can never be executed as shell code.
+read_app_vars() {
+  local prefix="$1" line key value
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    [[ "$line" == *=* ]] || continue
+    key="${line%%=*}"
+    value="${line#*=}"
+    case "$key" in
+      "${prefix}UUID"|"${prefix}DESKTOP_FILE"|"${prefix}RESOURCE_CLASS"|"${prefix}CAPTION"|"${prefix}PID")
+        printf -v "$key" '%s' "$value"
+        ;;
+    esac
+  done
 }
 
 capture_target_app() {
   query_active_app TARGET_ >"$TARGET_STATE"
-  # shellcheck disable=SC1090
-  source "$TARGET_STATE"
+  read_app_vars TARGET_ <"$TARGET_STATE"
   log "Target app: ${TARGET_DESKTOP_FILE:-?} | ${TARGET_RESOURCE_CLASS:-?} | ${TARGET_CAPTION:-?} | ${TARGET_UUID:-?}"
 }
 
@@ -210,13 +233,14 @@ load_target_app() {
   TARGET_RESOURCE_CLASS=""
   TARGET_CAPTION=""
   if [[ -f "$TARGET_STATE" ]]; then
-    # shellcheck disable=SC1090
-    source "$TARGET_STATE"
+    read_app_vars TARGET_ <"$TARGET_STATE"
   fi
 }
 
 load_current_app() {
-  eval "$(query_active_app CURRENT_)"
+  CURRENT_UUID=""
+  CURRENT_DESKTOP_FILE=""
+  read_app_vars CURRENT_ < <(query_active_app CURRENT_)
 }
 
 app_matches_patterns() {
@@ -449,20 +473,22 @@ insert_text() {
 
   load_target_app
 
+  # Capture the backend's exit code directly; `rc=$?` after an if/fi block
+  # would always read 0 and hide the real failure reason.
   if app_matches_patterns "$PASTE_FOR_APPS" "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION"; then
-    if paste_text "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION"; then
+    paste_text "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION" || rc=$?
+    if (( rc == 0 )); then
       log "Pasted transcription into active app (${#text} chars)."
       echo "Pasted into active app."
       return 0
     fi
-    rc=$?
   else
-    if type_text "$text"; then
+    type_text "$text" || rc=$?
+    if (( rc == 0 )); then
       log "Typed transcription into active app (${#text} chars)."
       echo "Typed into active app."
       return 0
     fi
-    rc=$?
   fi
 
   case "$rc" in
@@ -574,6 +600,13 @@ print(reply.get("text", ""), end="")
 '
 }
 
+# Delete the recording once the server has processed it, so voice audio
+# does not linger on disk. Set KEEP_AUDIO=1 to keep it for debugging.
+discard_audio() {
+  [[ "$KEEP_AUDIO" == "1" ]] && return 0
+  rm -f "$WAV" 2>/dev/null || true
+}
+
 record_stop_and_transcribe() {
   if [[ ! -f "$STATE" ]]; then
     echo "Not recording."
@@ -619,8 +652,11 @@ record_stop_and_transcribe() {
 
   ensure_server
 
-  local reply transcription
-  if ! reply="$(request_transcription 2>>"$LOG")"; then
+  local reply transcription reply_ok=1
+  reply="$(request_transcription 2>>"$LOG")" || reply_ok=0
+  discard_audio
+
+  if [[ "$reply_ok" != "1" ]]; then
     hide_overlay
     log "Failed talking to STT server"
     notify-send "$APP_NAME" "Could not reach speech server" || true

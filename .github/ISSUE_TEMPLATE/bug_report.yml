@@ -28,5 +28,5 @@ body:
     id: logs
     attributes:
       label: Relevant logs
-      description: Include excerpts from /tmp/hermeskey.log or journalctl if possible.
+      description: Include excerpts from ~/.local/state/hermeskey/hermeskey.log or journalctl if possible.
       render: shell
