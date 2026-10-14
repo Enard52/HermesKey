@@ -14,6 +14,27 @@ HermesKey is a local-first dictation tool for people who want voice input to fee
 
 Press your hotkey once to start recording. Press it again to stop. HermesKey transcribes locally with a prewarmed Whisper model and sends the text back into the app you were already using.
 
+## Install in 60 seconds
+
+| Step | Command |
+| --- | --- |
+| Install Linux packages | See distro blocks in [Quick start](#quick-start) |
+| Run the bootstrap installer | `curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh \| bash` |
+| Bind your hotkey | `~/.local/bin/hermeskey` |
+| Verify the setup | `hermeskey-doctor` |
+
+**Release install**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash
+```
+
+**Install from `main`**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/graygarbage/HermesKey/main/scripts/bootstrap.sh | bash -s -- --main
+```
+
 ## Why HermesKey
 
 - one-key start/stop workflow
