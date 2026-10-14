@@ -4,10 +4,16 @@ All notable changes to HermesKey will be documented in this file.
 
 ## [Unreleased]
 
+- TBD
+
+## [0.5.1] - 2026-10-14
+
+Branding release.
+
 ### Added
 
 - app icon (winged keycap) installed as `hermeskey` in the hicolor icon theme and used by the desktop launchers and AppStream metadata (#38)
-- README hero banner (#38)
+- README hero banner and GitHub social preview image (#38)
 
 ## [0.5.0] - 2026-10-14
 
