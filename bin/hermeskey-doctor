@@ -25,10 +25,41 @@ for cmd in ffmpeg python3 wl-copy notify-send ydotool ydotoold pactl paplay; do
 done
 
 section 'Python venv'
-if [[ -x "$HOME/venvs/stt/bin/python" ]]; then
-  ok "venv python found: $HOME/venvs/stt/bin/python"
+PYTHON_STT="$(
+  CONFIG_FILE="${HERMESKEY_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/hermeskey/hermeskey.env}"
+  # shellcheck disable=SC1090
+  [[ -f "$CONFIG_FILE" ]] && source "$CONFIG_FILE" >/dev/null 2>&1
+  printf '%s' "${PYTHON_STT:-$HOME/venvs/stt/bin/python}"
+)"
+if [[ -x "$PYTHON_STT" ]]; then
+  ok "venv python found: $PYTHON_STT"
+  if "$PYTHON_STT" -c 'import faster_whisper' >/dev/null 2>&1; then
+    ok 'faster-whisper is installed in the venv'
+  else
+    fail "faster-whisper is not installed for $PYTHON_STT"
+  fi
 else
-  warn "venv python missing: $HOME/venvs/stt/bin/python"
+  warn "venv python missing: $PYTHON_STT"
+fi
+
+section 'Overlay'
+# The overlay runs under the system python3, not the venv.
+if python3 -c 'import PySide6.QtWidgets' >/dev/null 2>&1; then
+  ok 'system python3 can import PySide6 (overlay)'
+else
+  warn 'system python3 cannot import PySide6: install python3-pyside6 (Fedora), pyside6 (Arch), or python3-pyside6.qtwidgets (Debian/Ubuntu)'
+fi
+
+section 'Active window detection'
+# Used for the terminal paste fallback and FOCUS_SAFE_MODE.
+if ! command -v qdbus >/dev/null 2>&1 && ! command -v qdbus6 >/dev/null 2>&1 && ! command -v qdbus-qt6 >/dev/null 2>&1; then
+  warn 'qdbus not found: active window detection unavailable (text is always typed)'
+elif command -v kdotool >/dev/null 2>&1; then
+  ok "using kdotool: $(command -v kdotool)"
+elif python3 -c 'import dbus; from gi.repository import GLib' >/dev/null 2>&1; then
+  ok 'using built-in KWin script (python3-dbus + GLib)'
+else
+  warn 'unavailable: install kdotool, or python3-dbus and python3-gobject (text is always typed)'
 fi
 
 section 'Services'
@@ -58,7 +89,20 @@ else
 fi
 
 section 'Audio sources'
+RECORD_SOURCE="$(
+  CONFIG_FILE="${HERMESKEY_CONFIG:-${XDG_CONFIG_HOME:-$HOME/.config}/hermeskey/hermeskey.env}"
+  # shellcheck disable=SC1090
+  [[ -f "$CONFIG_FILE" ]] && source "$CONFIG_FILE" >/dev/null 2>&1
+  printf '%s' "${RECORD_SOURCE:-default}"
+)"
 if command -v pactl >/dev/null 2>&1; then
+  if [[ "$RECORD_SOURCE" == "default" ]]; then
+    ok "RECORD_SOURCE=default (currently: $(pactl get-default-source 2>/dev/null || echo unknown))"
+  elif pactl list short sources 2>/dev/null | cut -f2 | grep -qxF -- "$RECORD_SOURCE"; then
+    ok "RECORD_SOURCE found: $RECORD_SOURCE"
+  else
+    warn "RECORD_SOURCE not found: $RECORD_SOURCE (PipeWire may silently fall back to the default mic)"
+  fi
   pactl list short sources || true
 fi
 

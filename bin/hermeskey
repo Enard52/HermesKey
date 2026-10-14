@@ -25,7 +25,8 @@ SERVER_SCRIPT_DEFAULT="${SERVER_SCRIPT:-$SCRIPT_DIR/hermeskey-server.py}"
 OVERLAY_SCRIPT_DEFAULT="${OVERLAY_SCRIPT:-$SCRIPT_DIR/hermeskey-overlay.py}"
 
 MODEL="${MODEL:-medium}"
-STT_LANG="${STT_LANG:-en}"
+# Unset -> en; set but empty (STT_LANG=) -> auto-detect.
+STT_LANG="${STT_LANG-en}"
 
 RUNTIME_DIR="${XDG_RUNTIME_DIR:-/tmp}"
 WAV="${WAV:-$RUNTIME_DIR/hermeskey_audio.wav}"
@@ -36,7 +37,7 @@ SOCK="${SOCK:-$RUNTIME_DIR/hermeskey.sock}"
 SERVER_PID="${SERVER_PID:-$RUNTIME_DIR/hermeskey_server.pid}"
 TARGET_STATE="${TARGET_STATE:-$RUNTIME_DIR/hermeskey_target.env}"
 
-RECORD_SOURCE="${RECORD_SOURCE:-alsa_input.usb-Beyerdynamic_FOX_5.00-00.mono-fallback}"
+RECORD_SOURCE="${RECORD_SOURCE:-default}"
 CLIP_CMD="${CLIP_CMD:-wl-copy}"
 INSERT_MODE="${INSERT_MODE:-type}"
 COPY_TO_CLIPBOARD="${COPY_TO_CLIPBOARD:-1}"
@@ -52,6 +53,12 @@ TONE_VOLUME="${TONE_VOLUME:-0.20}"
 TERMINAL_APPS="${TERMINAL_APPS:-org.wezfurlong.wezterm,org.kde.konsole,kitty,Alacritty,ghostty,foot,gnome-terminal,tilix,xfce4-terminal}"
 PASTE_FOR_APPS="${PASTE_FOR_APPS:-$TERMINAL_APPS}"
 PASTE_SHORTCUT="${PASTE_SHORTCUT:-auto}"
+# Typing speed (ms). ydotool's own default hold is 20 ms per key, which
+# made a 166-character dictation take ~4 s. Raise these if an app drops keys.
+TYPE_KEY_DELAY="${TYPE_KEY_DELAY:-1}"
+TYPE_KEY_HOLD="${TYPE_KEY_HOLD:-5}"
+[[ "$TYPE_KEY_DELAY" =~ ^[0-9]+$ ]] || TYPE_KEY_DELAY=1
+[[ "$TYPE_KEY_HOLD" =~ ^[0-9]+$ ]] || TYPE_KEY_HOLD=5
 PYTHON_STT="$PYTHON_STT_DEFAULT"
 SERVER_SCRIPT="$SERVER_SCRIPT_DEFAULT"
 OVERLAY_SCRIPT="$OVERLAY_SCRIPT_DEFAULT"
@@ -120,7 +127,7 @@ runtime:   $RUNTIME_DIR
 socket:    $SOCK
 recording: $( [[ -f "$STATE" ]] && printf yes || printf no )
 model:     $MODEL
-language:  $STT_LANG
+language:  ${STT_LANG:-auto}
 backend:   $TYPE_BACKEND
 insert:    $INSERT_MODE
 server:    $(service_status_line hermeskey.service)
@@ -167,16 +174,81 @@ PY
   fi
 }
 
+qdbus_cmd() {
+  local c
+  for c in qdbus qdbus6 qdbus-qt6; do
+    if command -v "$c" >/dev/null 2>&1; then
+      printf '%s\n' "$c"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Print the KWin UUID of the focused window, or nothing if unavailable.
+# Never uses org.kde.KWin.queryWindowInfo: that is KWin's interactive
+# window picker (crosshair cursor, blocks until the user clicks).
+active_window_uuid() {
+  local uuid=""
+  if command -v kdotool >/dev/null 2>&1; then
+    uuid="$(timeout 2 kdotool getactivewindow 2>/dev/null | head -n1 || true)"
+  else
+    # Built-in fallback: run a tiny KWin script that reports
+    # workspace.activeWindow back to us over D-Bus (same idea as kdotool).
+    uuid="$(timeout 3 python3 - 2>/dev/null <<'PY' || true
+import os, tempfile
+import dbus, dbus.service, dbus.mainloop.glib
+from gi.repository import GLib
+
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+bus = dbus.SessionBus()
+loop = GLib.MainLoop()
+result = []
+IFACE = "io.github.graygarbage.HermesKey.ActiveWindow"
+
+class Receiver(dbus.service.Object):
+    @dbus.service.method(IFACE, in_signature="s")
+    def Done(self, uuid):
+        result.append(str(uuid))
+        loop.quit()
+
+Receiver(bus, "/ActiveWindow")
+fd, path = tempfile.mkstemp(suffix=".js", dir=os.environ.get("XDG_RUNTIME_DIR"))
+with os.fdopen(fd, "w") as f:
+    f.write(
+        "const w = workspace.activeWindow || workspace.activeClient;\n"
+        f'callDBus("{bus.get_unique_name()}", "/ActiveWindow", "{IFACE}", "Done",'
+        ' w ? w.internalId.toString() : "");\n'
+    )
+scripting = bus.get_object("org.kde.KWin", "/Scripting")
+try:
+    sid = scripting.loadScript(path, dbus_interface="org.kde.kwin.Scripting")
+    bus.get_object("org.kde.KWin", f"/Scripting/Script{sid}").run(
+        dbus_interface="org.kde.kwin.Script")
+    GLib.timeout_add(1000, loop.quit)
+    loop.run()
+finally:
+    try:
+        scripting.unloadScript(path, dbus_interface="org.kde.kwin.Scripting")
+    finally:
+        os.unlink(path)
+print(result[0] if result else "")
+PY
+)"
+  fi
+  [[ "$uuid" =~ ^\{?[0-9a-fA-F-]{36}\}?$ ]] && printf '%s\n' "$uuid"
+  return 0
+}
+
 query_active_app() {
   local prefix="${1:-APP_}"
-  local window_info
-  if ! command -v qdbus >/dev/null 2>&1; then
-    printf '%sUUID=\n%sDESKTOP_FILE=\n%sRESOURCE_CLASS=\n%sCAPTION=\n%sPID=\n' \
-      "$prefix" "$prefix" "$prefix" "$prefix" "$prefix"
-    return 0
+  local window_info="" qdbus uuid
+  if qdbus="$(qdbus_cmd)"; then
+    uuid="$(active_window_uuid)"
+    if [[ -n "$uuid" ]]; then
+      window_info="$("$qdbus" org.kde.KWin /KWin org.kde.KWin.getWindowInfo "$uuid" 2>/dev/null || true)"
+    fi
   fi
-
-  window_info="$(qdbus org.kde.KWin /KWin org.kde.KWin.queryWindowInfo 2>/dev/null || true)"
   printf '%s\n' "$window_info" | python3 -c '
 import sys
 
@@ -240,6 +312,8 @@ load_target_app() {
 load_current_app() {
   CURRENT_UUID=""
   CURRENT_DESKTOP_FILE=""
+  CURRENT_RESOURCE_CLASS=""
+  CURRENT_CAPTION=""
   read_app_vars CURRENT_ < <(query_active_app CURRENT_)
 }
 
@@ -284,7 +358,6 @@ focus_is_safe() {
   [[ "$FOCUS_SAFE_MODE" == "1" ]] || return 0
 
   load_target_app
-  load_current_app
 
   if [[ -z "$TARGET_UUID" || -z "$CURRENT_UUID" ]]; then
     return 0
@@ -344,12 +417,14 @@ detect_type_backend() {
   echo none
 }
 
+COPIED=0
+
 copy_text() {
   local text="$1"
-  if [[ "$COPY_TO_CLIPBOARD" == "1" ]]; then
-    echo -n "$text" | "$CLIP_CMD"
-    log "Copied transcription to clipboard (${#text} chars)."
-  fi
+  [[ "$COPIED" == "1" ]] && return 0
+  printf '%s' "$text" | "$CLIP_CMD"
+  COPIED=1
+  log "Copied transcription to clipboard (${#text} chars)."
 }
 
 resolve_ydotool_socket() {
@@ -385,13 +460,18 @@ type_text() {
         log "ydotool selected but socket missing: $ysock"
         return 4
       fi
-      YDOTOOL_SOCKET="$ysock" "$ydotool_bin" type --key-delay 1 -- "$text"
+      local timing=(--key-delay "$TYPE_KEY_DELAY")
+      # --key-hold exists in ydotool >= 1.0 only (Debian/Ubuntu ship 0.1.x).
+      if "$ydotool_bin" type --help 2>&1 | grep -q -- '--key-hold'; then
+        timing+=(--key-hold "$TYPE_KEY_HOLD")
+      fi
+      YDOTOOL_SOCKET="$ysock" "$ydotool_bin" type "${timing[@]}" -- "$text"
       ;;
     wtype)
       "$wtype_bin" "$text"
       ;;
     xdotool)
-      "$xdotool_bin" type --clearmodifiers --delay 1 -- "$text"
+      "$xdotool_bin" type --clearmodifiers --delay "$TYPE_KEY_DELAY" -- "$text"
       ;;
     none)
       return 2
@@ -456,7 +536,12 @@ insert_text() {
   local text="$1"
   local rc=0
 
-  copy_text "$text"
+  # COPY_TO_CLIPBOARD=1 keeps a backup copy even when typing succeeds.
+  # With 0, the clipboard is only used when it is the only way to deliver
+  # the text (clipboard mode, focus changed, typing failed).
+  if [[ "$COPY_TO_CLIPBOARD" == "1" || "$INSERT_MODE" != "type" ]]; then
+    copy_text "$text"
+  fi
 
   if [[ "$INSERT_MODE" != "type" ]]; then
     echo "Copied to clipboard."
@@ -465,18 +550,31 @@ insert_text() {
 
   sleep 0.12
 
+  # Look up the focused window once: it's where the keystrokes will go, so
+  # it decides paste-vs-type and is compared with the recording target.
+  local want_paste=0
+  if [[ "$COPY_TO_CLIPBOARD" == "1" && -n "$PASTE_FOR_APPS" ]]; then
+    want_paste=1
+  fi
+  CURRENT_UUID="" CURRENT_DESKTOP_FILE="" CURRENT_RESOURCE_CLASS="" CURRENT_CAPTION=""
+  if [[ "$FOCUS_SAFE_MODE" == "1" || "$want_paste" == "1" ]]; then
+    load_current_app
+    log "Active app: ${CURRENT_DESKTOP_FILE:-?} | ${CURRENT_RESOURCE_CLASS:-?}"
+  fi
+
   if ! focus_is_safe; then
+    copy_text "$text"
     notify-send "$APP_NAME" "Focus changed. Transcript copied to clipboard only." || true
     echo "Copied to clipboard (focus changed)."
     return 0
   fi
 
-  load_target_app
-
   # Capture the backend's exit code directly; `rc=$?` after an if/fi block
   # would always read 0 and hide the real failure reason.
-  if app_matches_patterns "$PASTE_FOR_APPS" "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION"; then
-    paste_text "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION" || rc=$?
+  # Pasting needs the transcript on the clipboard; with COPY_TO_CLIPBOARD=0
+  # type instead of pasting whatever else happens to be there.
+  if [[ "$want_paste" == "1" ]] && app_matches_patterns "$PASTE_FOR_APPS" "$CURRENT_DESKTOP_FILE" "$CURRENT_RESOURCE_CLASS" "$CURRENT_CAPTION"; then
+    paste_text "$CURRENT_DESKTOP_FILE" "$CURRENT_RESOURCE_CLASS" "$CURRENT_CAPTION" || rc=$?
     if (( rc == 0 )); then
       log "Pasted transcription into active app (${#text} chars)."
       echo "Pasted into active app."
@@ -490,6 +588,9 @@ insert_text() {
       return 0
     fi
   fi
+
+  # Insertion failed: make sure the transcript is not lost.
+  copy_text "$text"
 
   case "$rc" in
     4)
@@ -516,15 +617,46 @@ insert_text() {
   return 0
 }
 
+# True if the server we started ourselves earlier is still alive (loading).
+own_server_alive() {
+  local pid
+  [[ -f "$SERVER_PID" ]] || return 1
+  pid="$(cat "$SERVER_PID" 2>/dev/null || true)"
+  [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null || return 1
+  tr '\0' ' ' <"/proc/$pid/cmdline" 2>/dev/null | grep -q 'hermeskey-server'
+}
+
+service_running() {
+  case "$(systemctl --user is-active hermeskey.service 2>/dev/null || true)" in
+    active|activating|reloading) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 ensure_server() {
   if server_ping; then
     return 0
   fi
 
-  rm -f "$SOCK"
-  log "Starting STT server (model=$MODEL lang=$STT_LANG)"
-  nohup "$PYTHON_STT" "$SERVER_SCRIPT" --socket "$SOCK" --model "$MODEL" --lang "$STT_LANG" >>"$SERVER_LOG" 2>&1 &
-  echo $! >"$SERVER_PID"
+  # The server only listens once the model is loaded. If one is already
+  # running but not answering yet, wait for it: starting another would load
+  # a second copy of the model and orphan one of them.
+  local waiting_for=""
+  if service_running; then
+    waiting_for="hermeskey.service"
+  elif own_server_alive; then
+    waiting_for="STT server pid $(cat "$SERVER_PID")"
+  fi
+
+  if [[ -n "$waiting_for" ]]; then
+    log "Speech model still loading in $waiting_for; waiting"
+    notify-send "$APP_NAME" "Speech model is still loading…" || true
+  else
+    rm -f "$SOCK"
+    log "Starting STT server (model=$MODEL lang=${STT_LANG:-auto})"
+    nohup "$PYTHON_STT" "$SERVER_SCRIPT" --socket "$SOCK" --model "$MODEL" --lang "$STT_LANG" >>"$SERVER_LOG" 2>&1 &
+    echo $! >"$SERVER_PID"
+  fi
 
   for _ in {1..120}; do
     if server_ping; then
@@ -533,6 +665,12 @@ ensure_server() {
     fi
     sleep 0.25
   done
+
+  if service_running || own_server_alive; then
+    log "STT server is still loading the model"
+    notify-send "$APP_NAME" "Speech model is still loading. Try again in a moment." || true
+    return 1
+  fi
 
   log "STT server failed to start"
   notify-send "$APP_NAME" "Speech model failed to start" || true
@@ -641,7 +779,6 @@ record_stop_and_transcribe() {
   if [[ ! -s "$WAV" ]]; then
     hide_overlay
     log "WAV missing or empty: $WAV"
-    echo -n "" | "$CLIP_CMD" || true
     notify-send "$APP_NAME" "No audio captured" || true
     echo "No audio captured."
     return
@@ -676,7 +813,6 @@ record_stop_and_transcribe() {
 
   if [[ -z "$transcription" ]]; then
     log "No transcription text produced."
-    echo -n "" | "$CLIP_CMD" || true
     echo "No transcription."
     return
   fi

@@ -13,12 +13,12 @@ The installer copies a starter file there on first install.
 ```bash
 MODEL=medium
 STT_LANG=en
-RECORD_SOURCE=alsa_input.usb-Beyerdynamic_FOX_5.00-00.mono-fallback
+RECORD_SOURCE=default
 ```
 
 - `MODEL`: any supported `faster-whisper` model name
 - `STT_LANG`: spoken language code; set empty for auto-detect
-- `RECORD_SOURCE`: microphone source from `pactl list short sources`
+- `RECORD_SOURCE`: `default` follows the desktop's default input; to pin a specific mic, use a name from `pactl list short sources`
 
 ## Insertion behavior
 
@@ -32,6 +32,15 @@ TYPE_BACKEND=auto
 - `INSERT_MODE=clipboard` only copies to clipboard
 - `COPY_TO_CLIPBOARD=1` keeps a backup copy even when typing succeeds
 - `TYPE_BACKEND` may be `auto`, `ydotool`, `wtype`, or `xdotool`
+
+```bash
+TYPE_KEY_DELAY=1
+TYPE_KEY_HOLD=5
+```
+
+- typing speed in milliseconds: delay between keys, and how long each key is held
+- ydotool's own default hold is 20 ms per key, so long dictations typed slowly; raise these if an app drops characters
+- `TYPE_KEY_HOLD` is only passed to ydotool 1.0 and newer
 
 ## Overlay and sound
 
@@ -50,7 +59,9 @@ TONE_VOLUME=0.20
 FOCUS_SAFE_MODE=0
 ```
 
-If enabled, HermesKey tries to verify that focus is still on the original target window before insertion.
+If enabled, HermesKey checks that focus is still on the window you started recording in before inserting. If focus moved, the transcript goes to the clipboard instead.
+
+This and the paste fallback below need active window detection (KDE Plasma). HermesKey uses `kdotool` if it is installed, and otherwise a small built-in KWin script, which needs `python3-dbus` and `python3-gobject` (usually already installed with Plasma). `hermeskey-doctor` shows which method is in use. Without either, text is always typed.
 
 ## Paste fallback
 
@@ -62,6 +73,8 @@ PASTE_SHORTCUT=auto
 
 - `PASTE_FOR_APPS` is a comma-separated pattern list
 - `PASTE_SHORTCUT=auto` picks `Ctrl+Shift+V` for terminal-like apps and `Ctrl+V` elsewhere
+- the check uses the window that is focused when the text is inserted
+- pasting needs the clipboard, so with `COPY_TO_CLIPBOARD=0` text is typed instead
 
 ## Runtime overrides
 

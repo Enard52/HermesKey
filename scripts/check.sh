@@ -1,12 +1,34 @@
 #!/usr/bin/env bash
+# Repository checks. Used by `make check` and CI.
 set -euo pipefail
 
-bash -n bin/hermeskey bin/hermeskey-doctor bin/hermeskey-desktop-status bin/hermeskey-desktop-doctor bin/hermeskey-open-config install.sh uninstall.sh scripts/check.sh scripts/build-release.sh scripts/bootstrap.sh scripts/release.sh
+cd "$(dirname -- "${BASH_SOURCE[0]}")/.."
+
+# Every bash script in the repo, found by shebang so new scripts are
+# covered automatically.
+shell_scripts=(install.sh uninstall.sh scripts/*.sh)
+for f in bin/*; do
+  [[ -f "$f" && "$f" != *.py ]] || continue
+  if head -n1 "$f" | grep -q 'bash'; then
+    shell_scripts+=("$f")
+  fi
+done
+
+echo "Shell syntax (${#shell_scripts[@]} scripts)"
+bash -n "${shell_scripts[@]}"
+
+echo "Python syntax"
 python3 -m py_compile bin/hermeskey-server.py bin/hermeskey-overlay.py
+
+echo "systemd units"
 systemd-analyze --user verify systemd/user/hermeskey.service systemd/user/hermeskey-ydotoold.service
 
 if command -v shellcheck >/dev/null 2>&1; then
-  shellcheck bin/hermeskey bin/hermeskey-doctor bin/hermeskey-desktop-status bin/hermeskey-desktop-doctor bin/hermeskey-open-config install.sh uninstall.sh scripts/check.sh scripts/build-release.sh scripts/bootstrap.sh scripts/release.sh
+  echo "shellcheck"
+  shellcheck "${shell_scripts[@]}"
+elif [[ "${REQUIRE_SHELLCHECK:-0}" == "1" ]]; then
+  echo 'shellcheck is required but not installed' >&2
+  exit 1
 else
   echo 'shellcheck not installed; skipping'
 fi

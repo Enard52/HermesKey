@@ -155,7 +155,7 @@ setup_python_env
 
 step "Running HermesKey installer"
 chmod +x "$ROOT/install.sh"
-HERMESKEY_INSTALL_CONTEXT=bootstrap bash "$ROOT/install.sh"
+HERMESKEY_INSTALL_CONTEXT=bootstrap HERMESKEY_VENV="$VENV_DIR" bash "$ROOT/install.sh"
 
 ok "HermesKey bootstrap complete"
 say
