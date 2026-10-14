@@ -6,6 +6,26 @@ All notable changes to HermesKey will be documented in this file.
 
 - TBD
 
+## [0.4.2] - 2026-10-14
+
+Bug-fix and privacy release.
+
+### Security
+
+- voice recordings are no longer world-readable: audio is recorded into `$XDG_RUNTIME_DIR` with owner-only permissions and deleted after transcription (#18)
+- the speech server socket is created with owner-only permissions from the start (#22)
+- KWin window info is parsed as data instead of being `eval`'d / `source`d (hardening; #19)
+
+### Fixed
+
+- typing/paste failures now show the specific reason (e.g. "ydotoold not running") instead of a generic error (#25)
+
+### Changed
+
+- logs moved from `/tmp` to `~/.local/state/hermeskey/`; custom `LOG` / `WAV` settings are still honored
+- new `KEEP_AUDIO` option (default `0`) to keep the last recording for debugging
+- the installer removes leftover world-readable `/tmp` audio and log files from older versions
+
 ## [0.4.1] - 2026-10-13
 
 Documentation and installer polish release.
