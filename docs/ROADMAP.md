@@ -82,5 +82,5 @@ Planned areas:
 Not immediate priorities:
 
 - a giant OpenSuperWhisper-style application
-- elaborate visual branding before the UX is settled
+- elaborate visual branding beyond the app icon and README banner
 - broad cross-desktop support claims before testing catches up

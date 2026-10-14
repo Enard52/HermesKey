@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 400" font-family="Cantarell, Inter, 'DejaVu Sans', sans-serif" role="img" aria-labelledby="title">
+  <!-- Editable source. assets/hermeskey-banner.svg is generated from this file
+       with text converted to outlines: see assets/README.md -->
+  <title id="title">HermesKey: push-to-talk speech-to-text for Linux Wayland desktops</title>
+  <rect width="1280" height="400" rx="28" fill="#0f172a"/>
+
+  <!-- Icon (same artwork as assets/hermeskey-icon.svg, on a lighter tile) -->
+  <g transform="translate(70,72) scale(0.5)">
+    <rect width="512" height="512" rx="112" fill="#1e293b"/>
+      <!-- Hermes wing -->
+      <path transform="translate(278,150) scale(0.85)" fill="#f59e0b" d="M0 150 C 10 80, 70 20, 170 0 C 186 -3, 196 14, 184 24 C 168 38, 150 46, 128 52 C 150 52, 166 60, 162 74 C 158 86, 140 92, 108 96 C 124 100, 130 112, 122 122 C 108 138, 60 150, 0 150 Z"/>
+      <!-- Keycap: side, then top face -->
+      <rect x="60" y="128" width="258" height="264" rx="56" fill="#94a3b8"/>
+      <rect x="80" y="134" width="218" height="226" rx="42" fill="#f8fafc"/>
+      <!-- Voice -->
+      <g fill="#1d4ed8">
+        <rect x="106" y="229" width="22" height="36" rx="11"/>
+        <rect x="142" y="207" width="22" height="80" rx="11"/>
+        <rect x="178" y="185" width="22" height="124" rx="11"/>
+        <rect x="214" y="207" width="22" height="80" rx="11"/>
+        <rect x="250" y="229" width="22" height="36" rx="11"/>
+      </g>
+  </g>
+
+  <text x="380" y="150" font-size="76" font-weight="bold" fill="#f8fafc">Hermes<tspan fill="#f59e0b">Key</tspan></text>
+  <text x="382" y="200" font-size="28" fill="#cbd5e1">Push-to-talk speech-to-text for Linux Wayland desktops</text>
+  <text x="382" y="248" font-size="22" fill="#94a3b8">Press a key, speak, press again. Your words land where you were typing.</text>
+
+  <g font-size="17" fill="#cbd5e1" text-anchor="middle">
+    <rect x="382" y="292" width="240" height="40" rx="20" fill="#1e293b" stroke="#334155"/>
+    <text x="502" y="318">Local faster-whisper</text>
+    <rect x="632" y="292" width="220" height="40" rx="20" fill="#1e293b" stroke="#334155"/>
+    <text x="742" y="318">Types into any app</text>
+    <rect x="862" y="292" width="240" height="40" rx="20" fill="#1e293b" stroke="#334155"/>
+    <text x="982" y="318">KDE Plasma · Wayland</text>
+  </g>
+</svg>

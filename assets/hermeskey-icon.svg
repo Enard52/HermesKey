@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">HermesKey</title>
+  <!-- Tile -->
+  <rect width="512" height="512" rx="112" fill="#0f172a"/>
+  <!-- Hermes wing -->
+  <path transform="translate(278,150) scale(0.85)" fill="#f59e0b" d="M0 150 C 10 80, 70 20, 170 0 C 186 -3, 196 14, 184 24 C 168 38, 150 46, 128 52 C 150 52, 166 60, 162 74 C 158 86, 140 92, 108 96 C 124 100, 130 112, 122 122 C 108 138, 60 150, 0 150 Z"/>
+  <!-- Keycap: side, then top face -->
+  <rect x="60" y="128" width="258" height="264" rx="56" fill="#94a3b8"/>
+  <rect x="80" y="134" width="218" height="226" rx="42" fill="#f8fafc"/>
+  <!-- Voice -->
+  <g fill="#1d4ed8">
+    <rect x="106" y="229" width="22" height="36" rx="11"/>
+    <rect x="142" y="207" width="22" height="80" rx="11"/>
+    <rect x="178" y="185" width="22" height="124" rx="11"/>
+    <rect x="214" y="207" width="22" height="80" rx="11"/>
+    <rect x="250" y="229" width="22" height="36" rx="11"/>
+  </g>
+</svg>
