@@ -25,7 +25,7 @@ It keeps `faster-whisper` warm in a background service and sends the transcript 
 
 | Distro | Command |
 | --- | --- |
-| Fedora / Nobara | `sudo dnf install ffmpeg wl-clipboard libnotify ydotool python3 python3-pip python3-virtualenv python3-qt6 qt6-qtwayland plasma-workspace pulseaudio-utils` |
+| Fedora / Nobara | `sudo dnf install ffmpeg wl-clipboard libnotify ydotool python3 python3-pip python3-virtualenv python3-pyside6 qt6-qtwayland plasma-workspace pulseaudio-utils` |
 | Arch / EndeavourOS | `sudo pacman -S --needed ffmpeg wl-clipboard libnotify ydotool python python-pip python-virtualenv pyside6 qt6-wayland plasma-workspace libpulse` |
 | Ubuntu / Debian | `sudo apt-get update && sudo apt-get install -y ffmpeg wl-clipboard libnotify-bin ydotool python3 python3-pip python3-venv python3-pyside6.qtcore python3-pyside6.qtgui python3-pyside6.qtwidgets qt6-wayland pulseaudio-utils` |
 

@@ -17,7 +17,7 @@ sudo dnf install \
   python3 \
   python3-pip \
   python3-virtualenv \
-  python3-qt6 \
+  python3-pyside6 \
   qt6-qtwayland \
   plasma-workspace \
   pulseaudio-utils

@@ -42,6 +42,14 @@ else
   warn "venv python missing: $PYTHON_STT"
 fi
 
+section 'Overlay'
+# The overlay runs under the system python3, not the venv.
+if python3 -c 'import PySide6.QtWidgets' >/dev/null 2>&1; then
+  ok 'system python3 can import PySide6 (overlay)'
+else
+  warn 'system python3 cannot import PySide6: install python3-pyside6 (Fedora), pyside6 (Arch), or python3-pyside6.qtwidgets (Debian/Ubuntu)'
+fi
+
 section 'Active window detection'
 # Used for the terminal paste fallback and FOCUS_SAFE_MODE.
 if ! command -v qdbus >/dev/null 2>&1 && ! command -v qdbus6 >/dev/null 2>&1 && ! command -v qdbus-qt6 >/dev/null 2>&1; then
