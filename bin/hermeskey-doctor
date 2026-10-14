@@ -31,6 +31,18 @@ else
   warn "venv python missing: $HOME/venvs/stt/bin/python"
 fi
 
+section 'Active window detection'
+# Used for the terminal paste fallback and FOCUS_SAFE_MODE.
+if ! command -v qdbus >/dev/null 2>&1 && ! command -v qdbus6 >/dev/null 2>&1 && ! command -v qdbus-qt6 >/dev/null 2>&1; then
+  warn 'qdbus not found: active window detection unavailable (text is always typed)'
+elif command -v kdotool >/dev/null 2>&1; then
+  ok "using kdotool: $(command -v kdotool)"
+elif python3 -c 'import dbus; from gi.repository import GLib' >/dev/null 2>&1; then
+  ok 'using built-in KWin script (python3-dbus + GLib)'
+else
+  warn 'unavailable: install kdotool, or python3-dbus and python3-gobject (text is always typed)'
+fi
+
 section 'Services'
 if systemctl --user is-active --quiet hermeskey.service; then
   ok 'hermeskey.service is active'

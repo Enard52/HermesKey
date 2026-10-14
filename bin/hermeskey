@@ -168,16 +168,81 @@ PY
   fi
 }
 
+qdbus_cmd() {
+  local c
+  for c in qdbus qdbus6 qdbus-qt6; do
+    if command -v "$c" >/dev/null 2>&1; then
+      printf '%s\n' "$c"
+      return 0
+    fi
+  done
+  return 1
+}
+
+# Print the KWin UUID of the focused window, or nothing if unavailable.
+# Never uses org.kde.KWin.queryWindowInfo: that is KWin's interactive
+# window picker (crosshair cursor, blocks until the user clicks).
+active_window_uuid() {
+  local uuid=""
+  if command -v kdotool >/dev/null 2>&1; then
+    uuid="$(timeout 2 kdotool getactivewindow 2>/dev/null | head -n1 || true)"
+  else
+    # Built-in fallback: run a tiny KWin script that reports
+    # workspace.activeWindow back to us over D-Bus (same idea as kdotool).
+    uuid="$(timeout 3 python3 - 2>/dev/null <<'PY' || true
+import os, tempfile
+import dbus, dbus.service, dbus.mainloop.glib
+from gi.repository import GLib
+
+dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+bus = dbus.SessionBus()
+loop = GLib.MainLoop()
+result = []
+IFACE = "io.github.graygarbage.HermesKey.ActiveWindow"
+
+class Receiver(dbus.service.Object):
+    @dbus.service.method(IFACE, in_signature="s")
+    def Done(self, uuid):
+        result.append(str(uuid))
+        loop.quit()
+
+Receiver(bus, "/ActiveWindow")
+fd, path = tempfile.mkstemp(suffix=".js", dir=os.environ.get("XDG_RUNTIME_DIR"))
+with os.fdopen(fd, "w") as f:
+    f.write(
+        "const w = workspace.activeWindow || workspace.activeClient;\n"
+        f'callDBus("{bus.get_unique_name()}", "/ActiveWindow", "{IFACE}", "Done",'
+        ' w ? w.internalId.toString() : "");\n'
+    )
+scripting = bus.get_object("org.kde.KWin", "/Scripting")
+try:
+    sid = scripting.loadScript(path, dbus_interface="org.kde.kwin.Scripting")
+    bus.get_object("org.kde.KWin", f"/Scripting/Script{sid}").run(
+        dbus_interface="org.kde.kwin.Script")
+    GLib.timeout_add(1000, loop.quit)
+    loop.run()
+finally:
+    try:
+        scripting.unloadScript(path, dbus_interface="org.kde.kwin.Scripting")
+    finally:
+        os.unlink(path)
+print(result[0] if result else "")
+PY
+)"
+  fi
+  [[ "$uuid" =~ ^\{?[0-9a-fA-F-]{36}\}?$ ]] && printf '%s\n' "$uuid"
+  return 0
+}
+
 query_active_app() {
   local prefix="${1:-APP_}"
-  local window_info
-  if ! command -v qdbus >/dev/null 2>&1; then
-    printf '%sUUID=\n%sDESKTOP_FILE=\n%sRESOURCE_CLASS=\n%sCAPTION=\n%sPID=\n' \
-      "$prefix" "$prefix" "$prefix" "$prefix" "$prefix"
-    return 0
+  local window_info="" qdbus uuid
+  if qdbus="$(qdbus_cmd)"; then
+    uuid="$(active_window_uuid)"
+    if [[ -n "$uuid" ]]; then
+      window_info="$("$qdbus" org.kde.KWin /KWin org.kde.KWin.getWindowInfo "$uuid" 2>/dev/null || true)"
+    fi
   fi
-
-  window_info="$(qdbus org.kde.KWin /KWin org.kde.KWin.queryWindowInfo 2>/dev/null || true)"
   printf '%s\n' "$window_info" | python3 -c '
 import sys
 
@@ -241,6 +306,8 @@ load_target_app() {
 load_current_app() {
   CURRENT_UUID=""
   CURRENT_DESKTOP_FILE=""
+  CURRENT_RESOURCE_CLASS=""
+  CURRENT_CAPTION=""
   read_app_vars CURRENT_ < <(query_active_app CURRENT_)
 }
 
@@ -285,7 +352,6 @@ focus_is_safe() {
   [[ "$FOCUS_SAFE_MODE" == "1" ]] || return 0
 
   load_target_app
-  load_current_app
 
   if [[ -z "$TARGET_UUID" || -z "$CURRENT_UUID" ]]; then
     return 0
@@ -473,6 +539,18 @@ insert_text() {
 
   sleep 0.12
 
+  # Look up the focused window once: it's where the keystrokes will go, so
+  # it decides paste-vs-type and is compared with the recording target.
+  local want_paste=0
+  if [[ "$COPY_TO_CLIPBOARD" == "1" && -n "$PASTE_FOR_APPS" ]]; then
+    want_paste=1
+  fi
+  CURRENT_UUID="" CURRENT_DESKTOP_FILE="" CURRENT_RESOURCE_CLASS="" CURRENT_CAPTION=""
+  if [[ "$FOCUS_SAFE_MODE" == "1" || "$want_paste" == "1" ]]; then
+    load_current_app
+    log "Active app: ${CURRENT_DESKTOP_FILE:-?} | ${CURRENT_RESOURCE_CLASS:-?}"
+  fi
+
   if ! focus_is_safe; then
     copy_text "$text"
     notify-send "$APP_NAME" "Focus changed. Transcript copied to clipboard only." || true
@@ -480,14 +558,12 @@ insert_text() {
     return 0
   fi
 
-  load_target_app
-
   # Capture the backend's exit code directly; `rc=$?` after an if/fi block
   # would always read 0 and hide the real failure reason.
   # Pasting needs the transcript on the clipboard; with COPY_TO_CLIPBOARD=0
   # type instead of pasting whatever else happens to be there.
-  if [[ "$COPY_TO_CLIPBOARD" == "1" ]] && app_matches_patterns "$PASTE_FOR_APPS" "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION"; then
-    paste_text "$TARGET_DESKTOP_FILE" "$TARGET_RESOURCE_CLASS" "$TARGET_CAPTION" || rc=$?
+  if [[ "$want_paste" == "1" ]] && app_matches_patterns "$PASTE_FOR_APPS" "$CURRENT_DESKTOP_FILE" "$CURRENT_RESOURCE_CLASS" "$CURRENT_CAPTION"; then
+    paste_text "$CURRENT_DESKTOP_FILE" "$CURRENT_RESOURCE_CLASS" "$CURRENT_CAPTION" || rc=$?
     if (( rc == 0 )); then
       log "Pasted transcription into active app (${#text} chars)."
       echo "Pasted into active app."

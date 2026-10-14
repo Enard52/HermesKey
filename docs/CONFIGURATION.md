@@ -50,7 +50,9 @@ TONE_VOLUME=0.20
 FOCUS_SAFE_MODE=0
 ```
 
-If enabled, HermesKey tries to verify that focus is still on the original target window before insertion.
+If enabled, HermesKey checks that focus is still on the window you started recording in before inserting. If focus moved, the transcript goes to the clipboard instead.
+
+This and the paste fallback below need active window detection (KDE Plasma). HermesKey uses `kdotool` if it is installed, and otherwise a small built-in KWin script, which needs `python3-dbus` and `python3-gobject` (usually already installed with Plasma). `hermeskey-doctor` shows which method is in use. Without either, text is always typed.
 
 ## Paste fallback
 
@@ -62,6 +64,8 @@ PASTE_SHORTCUT=auto
 
 - `PASTE_FOR_APPS` is a comma-separated pattern list
 - `PASTE_SHORTCUT=auto` picks `Ctrl+Shift+V` for terminal-like apps and `Ctrl+V` elsewhere
+- the check uses the window that is focused when the text is inserted
+- pasting needs the clipboard, so with `COPY_TO_CLIPBOARD=0` text is typed instead
 
 ## Runtime overrides
 

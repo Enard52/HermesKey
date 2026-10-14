@@ -62,6 +62,7 @@ sudo apt-get install -y \
 Notes:
 
 - `qdbus` normally comes from the KDE/Qt desktop stack.
+- Optional: `kdotool` for active window detection. Without it, HermesKey uses a built-in KWin script that needs `python3-dbus` and `python3-gobject`.
 - `paplay` is typically provided by `pulseaudio-utils`.
 - Package names vary slightly across distros; if a package name differs, install the nearest equivalent.
 
