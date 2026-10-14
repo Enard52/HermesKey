@@ -11,6 +11,8 @@ APPLICATIONS_DEST="$SHARE_DEST_DIR/applications"
 METADATA_DEST="$SHARE_DEST_DIR/metainfo"
 CONFIG_DEST_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/$APP_ID"
 DATA_DEST_DIR="$SHARE_DEST_DIR/$APP_ID"
+ICON_THEME_DIR="$SHARE_DEST_DIR/icons/hicolor"
+ICON_DEST="$ICON_THEME_DIR/scalable/apps"
 CONFIG_DEST="$CONFIG_DEST_DIR/hermeskey.env"
 CONFIG_EXAMPLE_DEST="$CONFIG_DEST_DIR/hermeskey.env.example"
 VERSION_DEST="$DATA_DEST_DIR/VERSION"
@@ -34,7 +36,7 @@ warn_if_missing notify-send
 warn_if_missing ydotool
 warn_if_missing paplay
 
-mkdir -p "$BIN_DEST" "$SYSTEMD_DEST" "$APPLICATIONS_DEST" "$METADATA_DEST" "$CONFIG_DEST_DIR" "$DATA_DEST_DIR"
+mkdir -p "$BIN_DEST" "$SYSTEMD_DEST" "$APPLICATIONS_DEST" "$METADATA_DEST" "$CONFIG_DEST_DIR" "$DATA_DEST_DIR" "$ICON_DEST"
 
 install -m 0755 "$ROOT/bin/hermeskey" "$BIN_DEST/hermeskey"
 install -m 0755 "$ROOT/bin/hermeskey-server.py" "$BIN_DEST/hermeskey-server.py"
@@ -51,6 +53,12 @@ install -m 0644 "$ROOT/systemd/user/hermeskey-ydotoold.service" "$SYSTEMD_DEST/h
 install -m 0644 "$ROOT/config/hermeskey.env.example" "$CONFIG_EXAMPLE_DEST"
 install -m 0644 "$ROOT/VERSION" "$VERSION_DEST"
 install -m 0644 "$ROOT/desktop/hermeskey.metainfo.xml" "$METADATA_DEST/hermeskey.metainfo.xml"
+install -m 0644 "$ROOT/assets/hermeskey-icon.svg" "$ICON_DEST/hermeskey.svg"
+# Let icon lookups notice the new icon (directory mtime, and GTK's cache if one exists).
+touch "$ICON_THEME_DIR"
+if [[ -f "$ICON_THEME_DIR/icon-theme.cache" ]] && command -v gtk-update-icon-cache >/dev/null 2>&1; then
+  gtk-update-icon-cache -q -t "$ICON_THEME_DIR" || true
+fi
 sed "s|@BIN_DEST@|$BIN_DEST|g" "$ROOT/desktop/hermeskey-status.desktop.in" > "$APPLICATIONS_DEST/hermeskey-status.desktop"
 sed "s|@BIN_DEST@|$BIN_DEST|g" "$ROOT/desktop/hermeskey-doctor.desktop.in" > "$APPLICATIONS_DEST/hermeskey-doctor.desktop"
 sed "s|@BIN_DEST@|$BIN_DEST|g" "$ROOT/desktop/hermeskey-config.desktop.in" > "$APPLICATIONS_DEST/hermeskey-config.desktop"

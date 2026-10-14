@@ -7,6 +7,7 @@ SHARE_DEST_DIR="${XDG_DATA_HOME:-$HOME/.local/share}"
 APPLICATIONS_DEST="$SHARE_DEST_DIR/applications"
 METADATA_DEST="$SHARE_DEST_DIR/metainfo"
 DATA_DEST_DIR="$SHARE_DEST_DIR/hermeskey"
+ICON_DEST="$SHARE_DEST_DIR/icons/hicolor/scalable/apps"
 
 systemctl --user disable --now hermeskey.service >/dev/null 2>&1 || true
 systemctl --user disable --now hermeskey-ydotoold.service >/dev/null 2>&1 || true
@@ -33,7 +34,8 @@ rm -f \
   "$APPLICATIONS_DEST/hermeskey-logs.desktop" \
   "$APPLICATIONS_DEST/hermeskey-control-center.desktop" \
   "$METADATA_DEST/hermeskey.metainfo.xml" \
-  "$DATA_DEST_DIR/VERSION"
+  "$DATA_DEST_DIR/VERSION" \
+  "$ICON_DEST/hermeskey.svg"
 
 systemctl --user daemon-reload
 

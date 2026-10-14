@@ -10,6 +10,7 @@
   <description>
     <p>HermesKey is a local-first push-to-talk speech-to-text tool for Linux Wayland desktops. It keeps faster-whisper warm in a background service and types the result back into the active app.</p>
   </description>
+  <icon type="stock">hermeskey</icon>
   <launchable type="desktop-id">hermeskey-status.desktop</launchable>
   <provides>
     <binary>hermeskey</binary>
